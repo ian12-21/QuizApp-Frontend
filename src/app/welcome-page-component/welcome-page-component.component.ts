@@ -4,11 +4,11 @@ import { WalletService } from '../../services/wallet.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-welcome-page-component',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './welcome-page-component.component.html',
-  styleUrl: './welcome-page-component.component.scss'
+    selector: 'app-welcome-page-component',
+    standalone: true,
+    imports: [CommonModule],
+    templateUrl: './welcome-page-component.component.html',
+    styleUrl: './welcome-page-component.component.scss'
 })
 // export class WelcomePageComponentComponent {
 // //here should be a container with info and 2 buttons: connect wallet and join quiz
