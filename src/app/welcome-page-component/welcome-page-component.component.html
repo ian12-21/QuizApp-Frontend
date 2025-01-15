@@ -1,0 +1,25 @@
+<section class="welcome-section container">
+    <div class="welcome-page-container">
+      <div class="container-wrapper">
+        <h1>Welcome to Quiz DApp</h1>
+        <p>Create or join quizzes and win prizes!</p>
+        
+        <ng-container *ngIf="!isConnected">
+          <p>Connect wallet to continue</p>
+          <div class="button-section">
+            <button class="connect-button" (click)="connectWallet()">
+              Connect Wallet
+            </button>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="isConnected">
+          <p>Connected: {{ shortenedAddress }}</p>
+          <div class="button-section">
+            <button class="create-button">Create a Quiz</button>
+            <button class="join-button">Join a Quiz</button>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </section>

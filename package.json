@@ -21,9 +21,15 @@
     "@angular/platform-server": "^18.2.0",
     "@angular/router": "^18.2.0",
     "@angular/ssr": "^18.2.9",
+    "@web3auth/ethereum-provider": "^9.5.2",
+    "@web3auth/modal": "^9.5.2",
+    "ethers": "^5.7.2",
     "express": "^4.18.2",
+    "hardhat": "^2.22.17",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
+    "web3": "^4.16.0",
+    "web3modal": "^1.9.12",
     "zone.js": "~0.14.10"
   },
   "devDependencies": {

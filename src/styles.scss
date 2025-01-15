@@ -1,1 +1,68 @@
 /* You can add global styles to this file, and also import other style files */
+html{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    background-size: cover;
+}
+
+body{
+    margin: 0;
+    font-family: Arial, sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 30px;
+    word-spacing: 0px; 
+    
+    background: linear-gradient(45deg, 
+        #00efff, 
+        #ffffff,
+        #ff4992, 
+        #00efff, 
+        #ff4992, 
+        #00efff);
+    background-size: 300% 300%;
+    animation: gradientAnimation 10s ease infinite;
+}
+
+@keyframes gradientAnimation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+  
+@media (min-width: 1400px) {
+    .container {
+      max-width: 750px;
+    }
+}
+  
+@media (min-width: 1200px) and (max-width: 1399px) {
+    .container {
+      max-width: 750px;
+    }
+}
+  
+@media (min-width: 1025px) and (max-width: 1199px) {
+    .container {
+      max-width: 650px;
+    }
+}
+  
+@media (min-width: 768px) and (max-width: 1024px) {
+    .container {
+      max-width: 550px;
+    }
+}
+  
+@media only screen and (max-width: 767px) {
+    .container {
+        max-width: 90%;
+    }
+}
