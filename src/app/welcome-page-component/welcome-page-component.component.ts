@@ -1,7 +1,7 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, PLATFORM_ID } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { WalletService } from '../../services/wallet.service';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 @Component({
     selector: 'app-welcome-page-component',
@@ -10,32 +10,16 @@ import { CommonModule } from '@angular/common';
     templateUrl: './welcome-page-component.component.html',
     styleUrl: './welcome-page-component.component.scss'
 })
-// export class WelcomePageComponentComponent {
-// //here should be a container with info and 2 buttons: connect wallet and join quiz
-// //when buttn is presed a popup appears with the wallet connection or quiz join
-// //the popup should be a separate component, use angular materials
-// }
-
 export class WelcomePageComponent implements OnInit {
-  isConnected: boolean = false;
-  shortenedAddress: string = '';
-  private subscriptions: Subscription[] = [];
 
-  constructor(private walletService: WalletService) {}
+  constructor(public walletService: WalletService,
+              @Inject(PLATFORM_ID) private platformId: object) {}
 
   ngOnInit() {
-    this.subscriptions.push(
-      this.walletService.isConnected$.subscribe(
-        connected => this.isConnected = connected
-      ),
-      this.walletService.account$.subscribe(account => {
-        this.shortenedAddress = account ? 
-          this.walletService.shortenAddress(account) : '';
-      })
-    );
+    if(isPlatformBrowser(this.platformId)){
+      
+    }
   }
-
-
 
   async connectWallet() {
     try {

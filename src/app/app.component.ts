@@ -1,9 +1,6 @@
 import { Component, Inject, PLATFORM_ID } from '@angular/core';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
-import { isPlatformBrowser } from '@angular/common';
-
-
 
 @Component({
     selector: 'app-root',
@@ -18,7 +15,6 @@ export class AppComponent {
   
   constructor(
     @Inject(PLATFORM_ID) private platformId: object,
-
     private router: Router
   ) {
     this.router.events.pipe(
@@ -30,9 +26,7 @@ export class AppComponent {
 
 
   async ngOnInit(){
-    if(isPlatformBrowser(this.platformId)){
-      //subscribe to if wallet is connected
-    }
+    
   }
 
 }

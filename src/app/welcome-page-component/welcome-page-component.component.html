@@ -4,17 +4,17 @@
         <h1>Welcome to Quiz DApp</h1>
         <p>Create or join quizzes and win prizes!</p>
         
-        <ng-container *ngIf="!isConnected">
+        <ng-container *ngIf="!walletService.isConnected()">
           <p>Connect wallet to continue</p>
           <div class="button-section">
             <button class="connect-button" (click)="connectWallet()">
-              Connect Wallet
+              <span>{{ walletService.isConnecting() ? 'Connecting...' : 'Connect Wallet' }}</span>
             </button>
           </div>
         </ng-container>
 
-        <ng-container *ngIf="isConnected">
-          <p>Connected: {{ shortenedAddress }}</p>
+        <ng-container *ngIf="walletService.isConnected()">
+          <p>Connected: {{ walletService.shortAddress() }}</p>
           <div class="button-section">
             <button class="create-button">Create a Quiz</button>
             <button class="join-button">Join a Quiz</button>
