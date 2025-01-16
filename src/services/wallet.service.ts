@@ -26,7 +26,7 @@ export class WalletService {
     this.isBrowser = isPlatformBrowser(platformId);
     if(this.isBrowser){
       this.initializeWalletListeners();
-      this.restoreConnectionState();
+      this.checkExistingConnection();
     }
   }
 
@@ -34,26 +34,23 @@ export class WalletService {
     return this.isBrowser ? window.ethereum : null;
   }
 
-  private isMetaMaskInstalled(): boolean {
+  private isWalletInstalled(): boolean {
     return this.isBrowser && typeof window.ethereum !== 'undefined';
   }
 
   private initializeWalletListeners(): void {
-    if (this.isMetaMaskInstalled()) {
+    if (this.isWalletInstalled()) {
       // Handle account changes
       this.ethereum.on('accountsChanged', (accounts: string[]) => {
         this.address.set(accounts[0] || null);
         if (!accounts[0]) {
           this.handleDisconnect();
-        } else {
-          this.saveConnectionState();
         }
       });
 
       // Handle chain changes
       this.ethereum.on('chainChanged', (chainId: string) => {
         this.chainId.set(parseInt(chainId, 16));
-        this.saveConnectionState();
       });
 
       // Handle disconnect
@@ -64,7 +61,7 @@ export class WalletService {
   }
 
   async connect(): Promise<boolean> {
-    if (!this.isMetaMaskInstalled()) {
+    if (!this.isWalletInstalled()) {
       this.error.set('No wallet found. Please install MetaMask.');
       return false;
     }
@@ -86,7 +83,6 @@ export class WalletService {
       this.address.set(accounts[0]);
       //converts chainId(which is in hex) to number
       this.chainId.set(parseInt(tmpChainId, 16));
-      this.saveConnectionState();
 
       return true;
     } catch (error) {
@@ -105,7 +101,6 @@ export class WalletService {
     this.address.set(null);
     this.chainId.set(null);
     this.error.set(null);
-    this.clearConnectionState();
   }
 
   private getErrorMessage(error: any): string {
@@ -118,7 +113,7 @@ export class WalletService {
   }
 
   async checkExistingConnection(): Promise<void> {
-    if (this.isMetaMaskInstalled()) {
+    if (this.isWalletInstalled()) {
       try {
         // Get currently connected accounts
         const accounts = await this.ethereum.request({ 
@@ -133,48 +128,10 @@ export class WalletService {
           
           this.address.set(accounts[0]);
           this.chainId.set(parseInt(chainId, 16));
-          this.saveConnectionState();
         }
       } catch (error) {
         console.error('Error checking wallet connection:', error);
       }
-    }
-  }
-
-  private saveConnectionState(): void {
-    if (this.isBrowser) {
-      localStorage.setItem('walletAddress', this.address() || '');
-      localStorage.setItem('walletChainId', this.chainId()?.toString() || '');
-    }
-  }
-
-  private async restoreConnectionState(): Promise<void> {
-    if (this.isBrowser) {
-      const address = localStorage.getItem('walletAddress');
-      const chainId = localStorage.getItem('walletChainId');
-
-      const accounts = await this.ethereum.request({ 
-        method: 'eth_requestAccounts' 
-      });
-
-      // Get current chain ID
-      const tmpChainId = await this.ethereum.request({ 
-        method: 'eth_chainId' 
-      });
-      
-      if (address && address === accounts[0]) {
-        this.address.set(address);
-      }
-      if (chainId && chainId === tmpChainId) {
-        this.chainId.set(parseInt(chainId, 10));
-      }
-    }
-  }
-
-  private clearConnectionState(): void {
-    if (this.isBrowser) {
-      localStorage.removeItem('walletAddress');
-      localStorage.removeItem('walletChainId');
     }
   }
 
