@@ -1,0 +1,96 @@
+.quiz-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 100px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  h1 {
+    margin: 0;
+    font-size: 24px;
+    color: white;
+  }
+
+  .question-count {
+    margin-left: 20px;
+    padding: 5px 10px;
+    background-color: #ff4992;
+    border-radius: 4px;
+    font-size: 18px;
+    color: white;
+  }
+}
+
+.quiz-form {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.questions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.question-card {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  h2 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-size: 18px;
+  }
+}
+
+.question-input {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.answers-container {
+  display: grid;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.answer-input {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  mat-form-field {
+    flex: 1;
+  }
+
+  mat-radio-button {
+    margin-left: 10px;
+  }
+}
+
+.question-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.save-question-button {
+  min-width: 120px;
+}
+
+.submit-button {
+  display: block;
+  margin: 30px auto;
+  font-size: 16px;
+  background-color: #ff4992;
+  color: white;
+  
+  &:hover {
+    background-color: darken(#ff4992, 10%);
+  }
+}

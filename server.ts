@@ -54,4 +54,14 @@ function run(): void {
   });
 }
 
+// function run(): void {
+//   const port = Number(process.env['PORT']) || 4000;
+
+//   // Start up the Node server
+//   const server = app();
+//   server.listen(port, '0.0.0.0', () => {
+//     console.log(`Node Express server listening on http://0.0.0.0:${port}`);
+//   });
+// }
+
 run();

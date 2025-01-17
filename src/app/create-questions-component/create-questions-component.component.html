@@ -1,0 +1,52 @@
+<div class="quiz-header">
+  <h1>{{ quizName }}</h1>
+  <span class="question-count">Questions: {{ numberOfQuestions }}</span>
+</div>
+
+<form [formGroup]="quizForm" (ngSubmit)="onSubmit()" class="quiz-form">
+  <div formArrayName="questions" class="questions-container">
+    <div *ngFor="let questionForm of getQuestionsFormArray().controls; let i = index" 
+         [formGroupName]="i" 
+         class="question-card">
+      <h2>Question {{ i + 1 }}</h2>
+      
+      <mat-form-field class="question-input">
+        <mat-label>Enter your question</mat-label>
+        <input matInput formControlName="question" placeholder="Type your question here">
+      </mat-form-field>
+
+      <div formArrayName="answers" class="answers-container">
+        <div *ngFor="let answer of getAnswersFormArray(i).controls; let j = index" 
+             class="answer-input">
+          <mat-form-field>
+            <mat-label>Answer {{ ['A', 'B', 'C', 'D'][j] }}</mat-label>
+            <input matInput [formControlName]="j" 
+                   [placeholder]="'Enter answer ' + ['A', 'B', 'C', 'D'][j]"
+                   (input)="onAnswerInput(i, j)">
+          </mat-form-field>
+          
+          <mat-radio-button [value]="j" 
+                           formControlName="correctAnswer"
+                           [disabled]="!hasAnswer(i, j)">
+            Correct Answer
+          </mat-radio-button>
+        </div>
+      </div>
+
+      <div class="question-actions">
+        <button mat-raised-button 
+                [color]="isQuestionSaved(i) ? 'accent' : 'primary'" 
+                type="button" 
+                (click)="saveQuestion(i)"
+                class="save-question-button">
+          {{ isQuestionSaved(i) ? 'Update Question' : 'Save Question' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <button mat-raised-button color="primary" type="submit" class="submit-button">
+    Deploy Quiz
+    <!-- here it need to call smart contract function -->
+  </button>
+</form>

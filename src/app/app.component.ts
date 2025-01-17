@@ -18,8 +18,8 @@ export class AppComponent {
     private router: Router
   ) {
     this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: NavigationEnd) => {
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd)
+    ).subscribe(event => {
       this.currentUrl = event.url;
     });
   }

@@ -1,8 +1,10 @@
 import { Routes } from '@angular/router';
 import { WelcomePageComponent } from './welcome-page-component/welcome-page-component.component';
+import { CreateQuestionsComponent } from './create-questions-component/create-questions-component.component';
 
 export const routes: Routes = [
   { path: '', component: WelcomePageComponent },
+  { path: 'quiz-creation/:address', component: CreateQuestionsComponent },
 ];
 
 

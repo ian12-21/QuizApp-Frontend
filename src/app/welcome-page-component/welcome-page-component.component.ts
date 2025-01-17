@@ -4,6 +4,7 @@ import { WalletService } from '../../services/wallet.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { CreateQuizPopUpComponent } from '../create-quiz-pop-up/create-quiz-pop-up.component';
 import { JoinQuizPopUpComponent } from '../join-quiz-pop-up/join-quiz-pop-up.component';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-welcome-page-component',
@@ -13,10 +14,11 @@ import { JoinQuizPopUpComponent } from '../join-quiz-pop-up/join-quiz-pop-up.com
     styleUrls: ['./welcome-page-component.component.scss']
 })
 export class WelcomePageComponent implements OnInit {
-
+  
   constructor(
     public walletService: WalletService,
     private dialog: MatDialog,
+    private router: Router,
     @Inject(PLATFORM_ID) private platformId: object
   ) {}
 
@@ -41,9 +43,13 @@ export class WelcomePageComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        // Handle the quiz creation here
-        console.log('Quiz to create:', result);
+      if (result) { 
+        this.router.navigate(['/quiz-creation', this.walletService.address()], {
+          state: {
+            quizName: result.quizName,
+            numberOfQuestions: result.numberOfQuestions
+          }
+        });
       }
     });
   }
