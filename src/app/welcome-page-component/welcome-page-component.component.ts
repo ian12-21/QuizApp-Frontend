@@ -47,7 +47,8 @@ export class WelcomePageComponent implements OnInit {
         this.router.navigate(['/quiz-creation', this.walletService.address()], {
           state: {
             quizName: result.quizName,
-            numberOfQuestions: result.numberOfQuestions
+            numberOfQuestions: result.numberOfQuestions,
+            ownerAddress: this.walletService.address(),
           }
         });
       }

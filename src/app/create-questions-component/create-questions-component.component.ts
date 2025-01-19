@@ -43,17 +43,20 @@ export class CreateQuestionsComponent {
   questionForms: QuestionForm[] = [];
   savedQuestions: { [key: number]: boolean } = {};
 
+  ownerAddress: string = '';
+
   constructor(
     private router: Router,
     private snackBar: MatSnackBar,
     public walletService: WalletService
   ) { 
     const navigation = this.router.getCurrentNavigation();
-    const state = navigation?.extras?.state as { quizName: string, numberOfQuestions: number };
+    const state = navigation?.extras?.state as { quizName: string, numberOfQuestions: number, ownerAddress: string };
 
-    if (state && this.walletService.isConnected()) {
+    if (state && this.walletService.isConnected() && this.walletService.address() === state.ownerAddress) {
       this.quizName = state.quizName;
       this.numberOfQuestions = state.numberOfQuestions;
+      this.ownerAddress = state.ownerAddress;
       this.initializeQuestions();
     } else {
       this.router.navigate(['']);
@@ -76,10 +79,13 @@ export class CreateQuestionsComponent {
     }
   }
 
+  //disable correct answer if answer is empty
+  //returns true if answer is not empty
   hasAnswer(questionIndex: number, answerIndex: number): boolean {
     return this.questionForms[questionIndex]?.answers[answerIndex]?.trim() !== '';
   }
 
+  //Resets the correct answer for a question if the currently selected correct answer becomes empty
   onAnswerInput(questionIndex: number, answerIndex: number) {
     const question = this.questionForms[questionIndex];
     if (question.correctAnswer === answerIndex && !this.hasAnswer(questionIndex, answerIndex)) {
@@ -105,7 +111,8 @@ export class CreateQuestionsComponent {
       this.snackBar.open('Please select a valid correct answer', 'Close', { duration: 3000 });
       return;
     }
-
+    //The result is an array of objects where each object represents a non-empty 
+    //answer and its index in the original array.
     const nonEmptyAnswerIndices = questionForm.answers
       .map((a, i) => ({ answer: a.trim(), index: i }))
       .filter(a => a.answer !== '');
@@ -121,7 +128,7 @@ export class CreateQuestionsComponent {
     this.savedQuestions[index] = true;
     this.snackBar.open('Question saved!', 'Close', { duration: 2000 });
   }
-
+  
   isQuestionSaved(index: number): boolean {
     return this.savedQuestions[index] || false;
   }
