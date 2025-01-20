@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { WalletService } from '../../services/wallet.service';
+import { QuizService } from '../../services/quizContracts.service';
 
 interface QuizQuestion {
   question: string;
@@ -48,7 +49,8 @@ export class CreateQuestionsComponent {
   constructor(
     private router: Router,
     private snackBar: MatSnackBar,
-    public walletService: WalletService
+    public walletService: WalletService,
+    private quizService: QuizService
   ) { 
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras?.state as { quizName: string, numberOfQuestions: number, ownerAddress: string };
@@ -123,7 +125,7 @@ export class CreateQuestionsComponent {
       correctAnswer: nonEmptyAnswerIndices.findIndex(a => a.index === questionForm.correctAnswer)
     };
 
-    console.log('Question saved:', this.questions[index]);
+    // console.log('Question saved:', this.questions[index]);
 
     this.savedQuestions[index] = true;
     this.snackBar.open('Question saved!', 'Close', { duration: 2000 });
@@ -133,7 +135,7 @@ export class CreateQuestionsComponent {
     return this.savedQuestions[index] || false;
   }
 
-  onSubmit() {
+  async onSubmit() {
     const unsavedQuestions = Array.from({ length: this.numberOfQuestions }, (_, i) => i)
       .filter(i => !this.isQuestionSaved(i));
 
@@ -142,10 +144,25 @@ export class CreateQuestionsComponent {
       return;
     }
 
-    console.log('Quiz Data:', {
-      name: this.quizName,
-      questions: this.questions
-    });
-    // Here you can call your smart contract function
+    try {
+      // Create quiz and get PIN
+      const result = await this.quizService.createQuiz(
+        this.quizName,
+        this.questions,
+      );
+
+      this.snackBar.open(`Quiz created! PIN: ${result.pin}`, 'Close', { duration: 5000 });
+      
+      // Navigate to quiz management or waiting room
+      this.router.navigate(['/quiz-queue'], {
+        state: {
+          quizAddress: result.quizAddress,
+          pin: result.pin
+        }
+      });
+    } catch (error) {
+      console.error('Error creating quiz:', error);
+      this.snackBar.open('Error creating quiz', 'Close', { duration: 3000 });
+    }
   }
 }

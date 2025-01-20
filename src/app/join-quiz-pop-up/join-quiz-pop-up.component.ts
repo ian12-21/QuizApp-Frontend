@@ -5,6 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
+import { QuizService } from '../../services/quizContracts.service';
 
 @Component({
   selector: 'app-join-quiz-pop-up',
@@ -26,19 +27,30 @@ export class JoinQuizPopUpComponent {
   constructor(
     private dialogRef: MatDialogRef<JoinQuizPopUpComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private quizService: QuizService
   ) {
     this.joinForm = this.fb.group({
       quizPin: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]]
     });
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (this.joinForm.valid) {
-      this.dialogRef.close(this.joinForm.value);
+      try {
+        const result = await this.quizService.getQuizByPin(this.joinForm.value.quizPin);
+        this.dialogRef.close({
+          ...this.joinForm.value,
+          quizAddress: result.quizAddress
+        });
+      } catch (error) {
+        // Handle error
+        console.error('Error joining quiz:', error);
+      
+        window.alert('Invalid PIN. Please try again.');
+      }
     }
   }
-
   onCancel() {
     this.dialogRef.close();
   }
