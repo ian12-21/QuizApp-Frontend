@@ -16,7 +16,7 @@ interface QuizQuestion {
 })
 export class QuizService {
   // private apiUrl = environment.apiUrl;
-  private apiUrl = 'http://localhost:3000';
+  private apiUrl = 'http://localhost:3000/api';
   private quizData: Map<string, any> = new Map();
 
   constructor(
