@@ -145,19 +145,24 @@ export class CreateQuestionsComponent {
     }
 
     try {
+      const address = this.walletService.address();
+      if (!address) {
+        throw new Error('Wallet not connected');
+      }
+
       // Create quiz and get PIN
       const result = await this.quizService.createQuiz(
-        this.quizName,
         this.questions,
       );
 
       this.snackBar.open(`Quiz created! PIN: ${result.pin}`, 'Close', { duration: 5000 });
       
       // Navigate to quiz management or waiting room
-      this.router.navigate(['/quiz-queue'], {
+      this.router.navigate(['/quiz-queue/quiz-address/', result.quizAddress], {
         state: {
           quizAddress: result.quizAddress,
-          pin: result.pin
+          pin: result.pin,
+          quizName: this.quizName
         }
       });
     } catch (error) {
