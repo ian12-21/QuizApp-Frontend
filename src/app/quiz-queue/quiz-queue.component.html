@@ -1,0 +1,40 @@
+<div class="quiz-queue-container">
+  <mat-card class="quiz-info">
+    <mat-card-header>
+      <mat-card-title>{{ quizName }}</mat-card-title>
+      <mat-card-subtitle>Waiting Room</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="quiz-details">
+        <p class="quiz-address">
+          <strong>Quiz Address:</strong> 
+          <a href="https://amoy.polygonscan.com/address/{{ quizAddress }}" target="_blank" class="address">{{ quizAddress }}</a>
+        </p>
+        <p *ngIf="quizPin" class="quiz-pin">
+          <strong>Quiz PIN:</strong> 
+          <span class="pin">{{ quizPin }}</span>
+        </p>
+      </div>
+
+      <div class="players-list">
+        <h3>Joined Players ({{ players.length }})</h3>
+        <mat-list>
+          <mat-list-item *ngFor="let player of players">
+            {{ player }}
+          </mat-list-item>
+          <mat-list-item *ngIf="players.length === 0" class="no-players">
+            Waiting for players to join...
+          </mat-list-item>
+        </mat-list>
+      </div>
+    </mat-card-content>
+    <mat-card-actions *ngIf="creatorAddress === this.walletService.address()">
+    <!-- <mat-card-actions> -->
+      <button mat-raised-button color="primary" 
+              [disabled]="players.length === 0"
+              (click)="startQuiz()">
+        Start Quiz
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

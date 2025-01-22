@@ -154,13 +154,14 @@ export class CreateQuestionsComponent {
       const result = await this.quizService.createQuiz(
         this.questions,
       );
-
+      console.log('Quiz created:', result);
       this.snackBar.open(`Quiz created! PIN: ${result.pin}`, 'Close', { duration: 5000 });
       
       // Navigate to quiz management or waiting room
       this.router.navigate(['/quiz-queue/quiz-address/', result.quizAddress], {
         state: {
           quizAddress: result.quizAddress,
+          address: address,
           pin: result.pin,
           quizName: this.quizName
         }

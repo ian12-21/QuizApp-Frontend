@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { WelcomePageComponent } from './welcome-page-component.component';
+import { QuizQueueComponent } from './quiz-queue.component';
 
-describe('WelcomePageComponentComponent', () => {
-  let component: WelcomePageComponent;
-  let fixture: ComponentFixture<WelcomePageComponent>;
+describe('QuizQueueComponent', () => {
+  let component: QuizQueueComponent;
+  let fixture: ComponentFixture<QuizQueueComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [WelcomePageComponent]
+      imports: [QuizQueueComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(WelcomePageComponent);
+    fixture = TestBed.createComponent(QuizQueueComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
