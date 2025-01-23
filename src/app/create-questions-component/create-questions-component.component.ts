@@ -152,20 +152,15 @@ export class CreateQuestionsComponent {
 
       // Create quiz and get PIN
       const result = await this.quizService.createQuiz(
-        this.questions,
+        this.ownerAddress,
+        this.quizName,
+        this.questions
       );
       console.log('Quiz created:', result);
       this.snackBar.open(`Quiz created! PIN: ${result.pin}`, 'Close', { duration: 5000 });
       
       // Navigate to quiz management or waiting room
-      this.router.navigate(['/quiz-queue/quiz-address/', result.quizAddress], {
-        state: {
-          quizAddress: result.quizAddress,
-          address: address,
-          pin: result.pin,
-          quizName: this.quizName
-        }
-      });
+      this.router.navigate(['/quiz-queue/quiz-address/', result.pin]);
     } catch (error) {
       console.error('Error creating quiz:', error);
       this.snackBar.open('Error creating quiz', 'Close', { duration: 3000 });

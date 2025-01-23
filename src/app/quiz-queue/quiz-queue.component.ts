@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, effect } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -27,49 +27,50 @@ export class QuizQueueComponent implements OnInit, OnDestroy {
     private router: Router,
     private quizService: QuizService,
     public walletService: WalletService
-  ) {
-    // Get navigation state
-    const navigation = this.router.getCurrentNavigation();
-    const state = navigation?.extras?.state as {
-      quizAddress: string;
-      address: string;
-      pin: string;
-      quizName: string;
-    };
+  ) {}
 
-    // If we have state and wallet is connected, use it
-    if (state && this.walletService.isConnected()) {
-      this.quizAddress = state.quizAddress;
-      this.creatorAddress = state.address;
-      this.quizPin = state.pin;
-      this.quizName = state.quizName;
-    }
-  }
-
-  ngOnInit() {
-    // If we don't have state from navigation, try to get from route params
+  async ngOnInit() {
+    // Subscribe to route params
     this.route.params.subscribe(async params => {
       try {
-        const address = params['address'];
-        if (!address) {
-          console.error('No quiz address provided');
+        console.log('Route params:', params);
+        const pin = params['pin'];
+        console.log('PIN from params:', pin);
+        
+        if (!pin) {
+          console.error('No PIN provided in route');
+          this.router.navigate(['/']);
           return;
         }
 
-        this.quizAddress = address;
-        
-        if (!this.quizPin) {
-          const quizInfo = await this.quizService.getQuizByAddress(address);
-          if (quizInfo) {
-            this.quizPin = quizInfo.pin;
-            this.players = quizInfo.playerAddresses || [];
+        this.quizPin = pin;
+        const quizInfo = await this.quizService.getQuizByPin(this.quizPin);
+        console.log('Quiz info:', quizInfo);
             
-            // Start refreshing players only after we have the quiz info
-            this.startPlayerRefresh();
-          }
+        if (quizInfo) {
+          // this.quizPin = quizInfo.pin;
+          this.creatorAddress = quizInfo.creatorAddress;
+          this.quizAddress = quizInfo.quizAddress;
+          this.quizName = quizInfo.quizName;
+          // this.players = quizInfo.playerAddresses;
+          
+          // Start refreshing players only after we have the quiz info
+          this.startPlayerRefresh();
+          
+          console.log('Final component state:', {
+            quizPin: this.quizPin,
+            creatorAddress: this.creatorAddress,
+            quizAddress: this.quizAddress,
+            quizName: this.quizName,
+            players: this.players,
+          });
+        } else {
+          console.error('Failed to get quiz info');
+          this.router.navigate(['/']);
         }
       } catch (error) {
         console.error('Error initializing quiz queue:', error);
+        this.router.navigate(['/']);
       }
     });
   }
@@ -111,19 +112,17 @@ export class QuizQueueComponent implements OnInit, OnDestroy {
         throw new Error('Missing required quiz information');
       }
       
-      await this.quizService.startQuiz(
+      const startTime = await this.quizService.startQuiz(
         this.quizAddress,
         this.creatorAddress,
         this.quizPin,
-        this.players
       );
+
       console.log('Quiz started successfully');
       // Navigate to active quiz page
-      this.router.navigate(['/active-quiz'], {
+      this.router.navigate(['/active-quiz/', this.quizPin], {
         state: {
-          quizAddress: this.quizAddress,
-          pin: this.quizPin,
-          name: this.quizName
+          startTime
         }
       });
     } catch (error) {

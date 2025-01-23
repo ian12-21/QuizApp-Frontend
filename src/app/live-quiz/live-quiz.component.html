@@ -1,0 +1,48 @@
+<div class="live-quiz-container">
+  <mat-card class="quiz-card">
+    <mat-card-header>
+      <mat-card-title>{{ quizName }}</mat-card-title>
+      <mat-card-subtitle>Question {{ currentQuestionIndex + 1 }} of {{ questions.length }}</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content *ngIf="questions[currentQuestionIndex]">
+      <div class="question-timer">
+        <div class="timer-bar"></div>
+      </div>
+
+      <div class="question-content">
+        <h2>{{ questions[currentQuestionIndex].question }}</h2>
+        
+        <mat-radio-group 
+          [(ngModel)]="selectedAnswer" 
+          class="answer-options"
+          [disabled]="isCreator">
+          <mat-radio-button 
+            *ngFor="let answer of questions[currentQuestionIndex].answers; let i = index" 
+            [value]="i"
+            class="answer-option">
+            {{ answer }}
+          </mat-radio-button>
+        </mat-radio-group>
+      </div>
+
+      <div class="action-buttons">
+        <button 
+          mat-raised-button 
+          color="primary"
+          (click)="submitAnswer()"
+          [disabled]="selectedAnswer === null || isCreator">
+          Submit Answer
+        </button>
+
+        <button 
+          *ngIf="isCreator && currentQuestionIndex === questions.length - 1"
+          mat-raised-button 
+          color="accent"
+          (click)="endQuiz()">
+          End Quiz
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

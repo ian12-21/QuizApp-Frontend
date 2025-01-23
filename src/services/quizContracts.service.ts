@@ -94,6 +94,8 @@ export class QuizService {
     }
 
     async createQuiz(
+      creatorAddress: string,
+      quizName: string,
       questions: Array<{
           question: string;
           answers: string[];
@@ -117,6 +119,7 @@ export class QuizService {
           const answersHash = ethers.keccak256(
               ethers.toUtf8Bytes(answersString)
           );
+
           
           const tx = await this.factory.createQuiz(
               questions.length,
@@ -138,21 +141,19 @@ export class QuizService {
 
           // Generate and store PIN with additional data
           const pin = this.generatePin();
+          const playerAddresses: string[] = [];
             
           // Save to backend
           await firstValueFrom(this.http.post(`${API_URL}/quiz/create`, {
               pin,
+              creatorAddress,
               quizAddress,
-              answersString,
-              playerAddresses: []
+              quizName,
+              answersHash,
+              playerAddresses,
+              questions,
           }));
 
-          // Update local state
-          this.quizPins.set(pin, {
-              quizAddress,
-              answersString,
-              playerAddresses: []
-          });
           console.log('quizPins:', this.quizPins);
 
           return {
@@ -168,7 +169,15 @@ export class QuizService {
     async getQuizByPin(pin: string) {
         try {
             const response = await firstValueFrom(
-                this.http.get<{ quizAddress: string, answersString: string, playerAddresses: string[] }>(`${API_URL}/quiz/${pin}`)
+                this.http.get<{ 
+                    pin: string,
+                    creatorAddress: string,
+                    quizAddress: string, 
+                    quizName: string,
+                    answersHash: string, 
+                    playerAddresses: string[], 
+                    questions: { question: string, answers: string[], correctAnswer: number }[] 
+                }>(`${API_URL}/quiz/${pin}`)
             );
             return response;
         } catch (error) {
@@ -177,39 +186,29 @@ export class QuizService {
         }
     }
 
-    async getQuizByAddress(quizAddress: string) {
-        try {
-            console.log('Fetching quiz for address:', quizAddress);
-            const response = await firstValueFrom(
-                this.http.get<{
-                    pin: string,
-                    quizData: {
-                        quizAddress: string,
-                        answersString: string,
-                        playerAddresses: string[]
-                    }
-                }>(`${API_URL}/quiz/address/${quizAddress}`)
-            );
-            
-            console.log('Backend response:', response);
-            
-            // Update local state with the fetched data
-            if (response && response.pin && response.quizData) {
-                this.quizPins.set(response.pin, response.quizData);
-                
-                return {
-                    pin: response.pin,
-                    ...response.quizData
-                };
-            }
-            throw new Error('Invalid response format from server');
-        } catch (error) {
-            console.error('Error fetching quiz:', error);
-            throw error instanceof Error ? error : new Error('Quiz not found');
-        }
-    }
+    // async getQuizByAddress(quizAddress: string) {
+    //     try {
+    //         console.log('Fetching quiz for address:', quizAddress);
+    //         const response = await firstValueFrom(
+    //             this.http.get<{
+    //                 pin: string,
+    //                 quizData: {
+    //                     quizAddress: string,
+    //                     answersHash: string,
+    //                     playerAddresses: string[]
+    //                 }
+    //             }>(`${API_URL}/quiz/address/${quizAddress}`)
+    //         );
+    //         return response;
+    //         console.log('Backend response:', response);
+    //         throw new Error('Invalid response format from server');
+    //     } catch (error) {
+    //         console.error('Error fetching quiz:', error);
+    //         throw error instanceof Error ? error : new Error('Quiz not found');
+    //     }
+    // }
 
-    async startQuiz(quizAddress: string, creatorAddress: string, pin: string, _playerAddresses: string[]) {
+    async startQuiz(quizAddress: string, creatorAddress: string, pin: string) {
         try {
             const quizData = await this.getQuizByPin(pin);
             if (!quizData) {
@@ -227,8 +226,6 @@ export class QuizService {
             if (isStarted) {
                 throw new Error('Quiz already started');
             }
-
-            quizData.playerAddresses = _playerAddresses;
             
             const tx = await quiz.startQuiz(quizData.playerAddresses);
             const receipt = await tx.wait();
@@ -249,59 +246,59 @@ export class QuizService {
         }
     }
 
-    async endQuiz(
-        quizAddress: string,
-        creatorAddress: string,
-        pin: string,
-        playerScores: { [address: string]: number }
-    ) {
-        try {
-            const quizData = await this.getQuizByPin(pin);
-            if (!quizData) {
-                throw new Error('Quiz not found');
-            }
+    // async endQuiz(
+    //     quizAddress: string,
+    //     creatorAddress: string,
+    //     pin: string,
+    //     playerScores: { [address: string]: number }
+    // ) {
+    //     try {
+    //         const quizData = await this.getQuizByPin(pin);
+    //         if (!quizData) {
+    //             throw new Error('Quiz not found');
+    //         }
 
-            const signer = await this.provider?.getSigner(creatorAddress);
-            if (!signer) {
-                throw new Error('Failed to get signer');
-            }
-            const quiz = new Contract(quizAddress, quizAbi, signer) as unknown as QuizContract;
+    //         const signer = await this.provider?.getSigner(creatorAddress);
+    //         if (!signer) {
+    //             throw new Error('Failed to get signer');
+    //         }
+    //         const quiz = new Contract(quizAddress, quizAbi, signer) as unknown as QuizContract;
             
-            // Check quiz state
-            const isStarted = await quiz.isStarted();
-            const isFinished = await quiz.isFinished();
-            if (!isStarted || isFinished) {
-                throw new Error('Quiz not active');
-            }
+    //         // Check quiz state
+    //         const isStarted = await quiz.isStarted();
+    //         const isFinished = await quiz.isFinished();
+    //         if (!isStarted || isFinished) {
+    //             throw new Error('Quiz not active');
+    //         }
 
-            // Convert player scores to arrays matching the contract format
-            const players = quizData.playerAddresses;
-            const scores = players.map(addr => playerScores[addr] || 0);
+    //         // Convert player scores to arrays matching the contract format
+    //         const players = quizData.playerAddresses;
+    //         const scores = players.map(addr => playerScores[addr] || 0);
             
-            const tx = await quiz.CalculateWinner(
-                quizData.answersString,
-                players,
-                scores
-            );
-            const receipt = await tx.wait();
+    //         const tx = await quiz.CalculateWinner(
+    //             quizData.answersString,
+    //             players,
+    //             scores
+    //         );
+    //         const receipt = await tx.wait();
             
-            if (!receipt) {
-                throw new Error('Transaction receipt not found');
-            }
-            const event = receipt.logs
-                .map(log => quiz.interface.parseLog(log))
-                .find(parsedLog => parsedLog && parsedLog.name === 'QuizFinished');
-            const [winner, score] = event?.args || [];
+    //         if (!receipt) {
+    //             throw new Error('Transaction receipt not found');
+    //         }
+    //         const event = receipt.logs
+    //             .map(log => quiz.interface.parseLog(log))
+    //             .find(parsedLog => parsedLog && parsedLog.name === 'QuizFinished');
+    //         const [winner, score] = event?.args || [];
 
-            return { 
-                winner, 
-                score: score.toString(),
-            };
-        } catch (error) {
-            console.error('Error ending quiz:', error);
-            throw error;
-        }
-    }
+    //         return { 
+    //             winner, 
+    //             score: score.toString(),
+    //         };
+    //     } catch (error) {
+    //         console.error('Error ending quiz:', error);
+    //         throw error;
+    //     }
+    // }
 
     getQuizContract(quizAddress: string): QuizContract {
         return new ethers.Contract(
@@ -320,4 +317,5 @@ export class QuizService {
         const quiz = this.getQuizContract(quizAddress);
         return await quiz.isFinished();
     }
+
 }
