@@ -29,6 +29,7 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
   quizName: string = '';
   creatorAddress: string = '';
   questions: Array<{ question: string; answers: string[]; correctAnswer: number }> = [];
+  currentQuestion: { question: string; answers: string[]; correctAnswer: number } | null = null;
   currentQuestionIndex: number = 0;
   selectedAnswer: number | null = null;
   userAnswers: { address: string | null; answers: number[] } = { address: '', answers: [] };
@@ -49,27 +50,16 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     try {
       // Get quiz pin from URL
-      this.route.params.subscribe(async params => {
-        const pin = params['pin'];
-        if (!pin) {
+      this.route.params.subscribe(params => {
+        this.quizPin = params['pin'] || '';
+        if (!this.quizPin) {
           console.error('No quiz PIN provided');
           this.router.navigate(['/']);
           return;
         }
 
-        this.quizPin = pin;
-        const quizInfo = await this.quizService.getQuizByPin(this.quizPin);
-        
-        if (quizInfo) {
-          this.quizAddress = quizInfo.quizAddress;
-          this.quizName = quizInfo.quizName;
-          this.creatorAddress = quizInfo.creatorAddress;
-          this.questions = quizInfo.questions;
-          this.isCreator = this.creatorAddress === this.walletService.address();
-          
-          // Start displaying questions
-          this.startQuestionTimer();
-        }
+        // Initialize quiz data
+        this.initializeQuiz();
       });
     } catch (error) {
       console.error('Error initializing live quiz:', error);
@@ -82,10 +72,34 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
     }
   }
 
+  private async initializeQuiz() {
+    try {
+      // Fetch quiz data here
+      const quizInfo = await this.quizService.getQuizByPin(this.quizPin);
+      
+      if (quizInfo) {
+        this.quizAddress = quizInfo.quizAddress;
+        this.quizName = quizInfo.quizName;
+        this.creatorAddress = quizInfo.creatorAddress;
+        this.questions = quizInfo.questions;
+        this.isCreator = this.creatorAddress === this.walletService.address();
+        
+        if (this.questions.length > 0) {
+          this.currentQuestion = this.questions[this.currentQuestionIndex];
+          this.startQuestionTimer();
+        }
+      }
+    } catch (error) {
+      console.error('Error initializing quiz:', error);
+      this.router.navigate(['/']);
+    }
+  }
+
   private startQuestionTimer() {
     this.questionTimer = setInterval(() => {
       if (this.currentQuestionIndex < this.questions.length - 1) {
         this.currentQuestionIndex++;
+        this.currentQuestion = this.questions[this.currentQuestionIndex];
         this.selectedAnswer = null;
       } else {
         clearInterval(this.questionTimer);
@@ -126,6 +140,8 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
           score: result.score
         }
       });*/
+      this.router.navigate(['/']);
+      this.ngOnDestroy(); 
     } catch (error) {
       console.error('Error ending quiz:', error);
     }

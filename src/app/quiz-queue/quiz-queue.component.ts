@@ -33,9 +33,9 @@ export class QuizQueueComponent implements OnInit, OnDestroy {
     // Subscribe to route params
     this.route.params.subscribe(async params => {
       try {
-        console.log('Route params:', params);
+        // console.log('Route params:', params);
         const pin = params['pin'];
-        console.log('PIN from params:', pin);
+        // console.log('PIN from params:', pin);
         
         if (!pin) {
           console.error('No PIN provided in route');
@@ -45,7 +45,7 @@ export class QuizQueueComponent implements OnInit, OnDestroy {
 
         this.quizPin = pin;
         const quizInfo = await this.quizService.getQuizByPin(this.quizPin);
-        console.log('Quiz info:', quizInfo);
+        // console.log('Quiz info:', quizInfo);
             
         if (quizInfo) {
           // this.quizPin = quizInfo.pin;
@@ -56,14 +56,19 @@ export class QuizQueueComponent implements OnInit, OnDestroy {
           
           // Start refreshing players only after we have the quiz info
           this.startPlayerRefresh();
+
+          if(this.creatorAddress !== this.walletService.address()) {
+            const userAddress = await this.walletService.getUserAddress();
+            this.players.push(userAddress);
+          }
           
-          console.log('Final component state:', {
-            quizPin: this.quizPin,
-            creatorAddress: this.creatorAddress,
-            quizAddress: this.quizAddress,
-            quizName: this.quizName,
-            players: this.players,
-          });
+          // console.log('Final component state:', {
+          //   quizPin: this.quizPin,
+          //   creatorAddress: this.creatorAddress,
+          //   quizAddress: this.quizAddress,
+          //   quizName: this.quizName,
+          //   players: this.players,
+          // });
         } else {
           console.error('Failed to get quiz info');
           this.router.navigate(['/']);
@@ -99,7 +104,8 @@ export class QuizQueueComponent implements OnInit, OnDestroy {
       }
       const quizData = await this.quizService.getQuizByPin(this.quizPin);
       if (quizData && Array.isArray(quizData.playerAddresses)) {
-        this.players = quizData.playerAddresses;
+        const uniquePlayers = new Set([...this.players, ...quizData.playerAddresses]);
+        this.players = Array.from(uniquePlayers);
       }
     } catch (error) {
       console.error('Error refreshing players:', error);

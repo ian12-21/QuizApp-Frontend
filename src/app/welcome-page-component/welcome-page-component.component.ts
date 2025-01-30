@@ -64,7 +64,7 @@ export class WelcomePageComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         // Handle joining the quiz here
-        this.router.navigate(['/quiz-queue/quiz-address/', result.quizAddress], {
+        this.router.navigate(['/quiz-queue/quiz-address/', result.quizPin], {
           state: {
             quizAddress: result.quizAddress,
           }
