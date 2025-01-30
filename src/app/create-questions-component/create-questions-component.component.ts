@@ -55,7 +55,7 @@ export class CreateQuestionsComponent {
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras?.state as { quizName: string, numberOfQuestions: number, ownerAddress: string };
 
-    if (state && this.walletService.isConnected() && this.walletService.address() === state.ownerAddress) {
+    if (state && this.walletService.address() === state.ownerAddress) {
       this.quizName = state.quizName;
       this.numberOfQuestions = state.numberOfQuestions;
       this.ownerAddress = state.ownerAddress;
@@ -63,12 +63,6 @@ export class CreateQuestionsComponent {
     } else {
       this.router.navigate(['']);
     }
-
-    effect(() => {
-      if (!this.walletService.isConnected()) {
-        this.router.navigate(['']);
-      }
-    });
   }
 
   private initializeQuestions() {
@@ -136,6 +130,10 @@ export class CreateQuestionsComponent {
   }
 
   async onSubmit() {
+    if(!this.walletService.isConnected()){
+      this.snackBar.open('Wallet not connected', 'Close', { duration: 3000 });
+    }
+
     const unsavedQuestions = Array.from({ length: this.numberOfQuestions }, (_, i) => i)
       .filter(i => !this.isQuestionSaved(i));
 

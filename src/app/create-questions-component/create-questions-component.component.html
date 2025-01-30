@@ -17,7 +17,7 @@
           <div class="answer-input">
             <input [(ngModel)]="questionForm.answers[0]"
                    [name]="'answer' + i + '-' + 0"
-                   [placeholder]="'Enter answer ' + ['A', 'B', 'C', 'D'][1]"
+                   [placeholder]="'Enter answer ' + ['A', 'B', 'C', 'D'][0]"
                    (input)="onAnswerInput(i, 0)">
             <mat-radio-group [(ngModel)]="questionForm.correctAnswer"
                              [name]="'correctAnswer' + i">

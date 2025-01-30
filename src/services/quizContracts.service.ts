@@ -60,8 +60,6 @@ export class QuizService {
         if (this.isBrowser) {
             this.provider = new ethers.BrowserProvider(this.ethereum);
             this.initializeAsync();
-        } else {
-            console.error('Please install MetaMask!');
         }
     }
 
