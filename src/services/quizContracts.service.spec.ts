@@ -132,8 +132,33 @@ describe('QuizService', () => {
     const mockQuiz = {
       quizAddress: '0x123',
       answersString: '123',
-      playerAddresses: []
+      playerAddresses: [],
+      pin: '123456',
+      creatorAddress: '0x123',
+      quizName: 'Test Quiz',
+      answersHash: '123',
+      questions: [
+        {
+          question: 'Test Question',
+          answers: ['A', 'B', 'C'],
+          correctAnswer: 1
+        }
+      ]
     };
+
+    it('should store quiz data with PIN', async () => {
+      const pin = service.generatePin();
+      (service as any).quizPins.set(pin, mockQuiz);
+
+      const retrievedQuiz = await service.getQuizByPin(pin);
+      expect(retrievedQuiz).toEqual(mockQuiz);
+    });
+
+    it('should throw error when quiz not found', async () => {
+      await expectAsync(
+        service.getQuizByPin('999999')
+      ).toBeRejectedWithError('Quiz not found');
+    });
 
     it('should store quiz data with PIN', async () => {
       const pin = service.generatePin();
@@ -184,7 +209,7 @@ describe('QuizService', () => {
       (service as any).provider = mockProvider;
       (service as any).factory = mockFactory;
 
-      const result = await service.createQuiz(mockQuestions);
+      const result = await service.createQuiz('0x0000000000000000000000000000000000000000', '0x123', mockQuestions);
       
       expect(result.quizAddress).toBeTruthy();
       expect(result.pin).toBeTruthy();
