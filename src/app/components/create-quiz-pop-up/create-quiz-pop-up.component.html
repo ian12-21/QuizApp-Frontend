@@ -5,7 +5,7 @@
     <div class="form-fields">
       <mat-form-field appearance="fill">
         <mat-label>Quiz Name</mat-label>
-        <input matInput formControlName="quizName" required>
+        <input matInput formControlName="quizName" required placeholder="Enter quiz name">
         <mat-error *ngIf="quizForm.get('quizName')?.hasError('required')">
           Quiz name is required
         </mat-error>
@@ -13,7 +13,7 @@
 
       <mat-form-field appearance="fill">
         <mat-label>Number of Questions</mat-label>
-        <input matInput type="number" formControlName="numberOfQuestions" required min="1" max="50">
+        <input matInput type="text" formControlName="numberOfQuestions" required min="1" max="20" placeholder="1-20">
         <mat-error *ngIf="quizForm.get('numberOfQuestions')?.hasError('required')">
           Number of questions is required
         </mat-error>

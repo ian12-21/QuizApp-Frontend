@@ -5,7 +5,7 @@
     <div class="form-fields">
       <mat-form-field appearance="fill">
         <mat-label>Quiz PIN</mat-label>
-        <input matInput formControlName="quizPin" required maxlength="6" minlength="6" pattern="[0-9]*">
+        <input matInput formControlName="quizPin" required maxlength="6" minlength="6" pattern="[0-9]*" placeholder="Enter 6-digit PIN">
         <mat-error *ngIf="joinForm.get('quizPin')?.hasError('required')">
           Quiz PIN is required
         </mat-error>
