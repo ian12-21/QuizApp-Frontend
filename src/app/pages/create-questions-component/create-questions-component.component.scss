@@ -1,13 +1,3 @@
-:host {
-  display: block;
-  min-height: 100vh;
-  background: linear-gradient(
-    to right,
-    #00efff,
-    #ff4992
-  ) !important;
-}
-
 .quiz-header {
   display: flex;
   justify-content: center;
@@ -26,7 +16,7 @@
   .question-count {
     margin-left: 20px;
     padding: 5px 10px;
-    background-color: #ff4992;
+    background-color: #d43bd4;
     border-radius: 4px;
     font-size: 18px;
     color: white;
@@ -46,40 +36,42 @@
 }
 
 .question-card {
-  background-color: white;
+  background-color: #262C3A;
+  color: white;
   padding: 30px;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
   transition: transform 0.2s, box-shadow 0.2s;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
   }
 
   h2 {
     margin: 0 0 20px 0;
-    color: #333;
     font-size: 20px;
     font-weight: 600;
   }
 
   input {
+    background-color: #262C3A;
     height: 50px;
-    border: 2px solid #e0e0e0;
+    border: 1px solid white;
     border-radius: 8px;
     font-size: 16px;
     margin-bottom: 25px;
     transition: border-color 0.3s;
     padding: 0 10px;
+    color: white;
 
     &:focus {
       outline: none;
-      border-color: #2196f3;
+      border-color: rgba(0, 232, 181, 0.8);
     }
 
     &::placeholder {
-      color: #9e9e9e;
+      color: rgba(0, 232, 181, 0.6);
     }
   }
 
@@ -98,16 +90,43 @@
         flex: 1;
         height: 35px;
         margin-bottom: 0;
+        color: white;
       }
 
       mat-radio-button {
-        &.mat-radio-checked {
-          ::ng-deep .mat-radio-outer-circle {
-            border-color: #2196f3;
+        ::ng-deep .mdc-form-field {
+          color: white;
+        }
+        
+        ::ng-deep .mdc-radio {
+          padding: 10px;
+        }
+        
+        ::ng-deep .mdc-radio .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__outer-circle,
+        ::ng-deep .mdc-radio .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__inner-circle {
+          border-color: rgba(0, 232, 181, 0.8);
+        }
+        
+        ::ng-deep .mdc-radio .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__inner-circle {
+          background-color: rgba(0, 232, 181, 0.8);
+        }
+        
+        ::ng-deep .mdc-radio .mdc-radio__native-control:enabled:not(:checked) + .mdc-radio__background .mdc-radio__outer-circle {
+          border-color: rgba(255, 255, 255, 0.6);
+        }
+        
+        ::ng-deep .mdc-form-field label {
+          color: white;
+        }
+        
+        &[disabled] {
+          ::ng-deep .mdc-form-field label {
+            color: rgba(255, 255, 255, 0.4);
           }
-
-          ::ng-deep .mat-radio-inner-circle {
-            background-color: #2196f3;
+          
+          ::ng-deep .mdc-radio .mdc-radio__native-control:disabled + .mdc-radio__background .mdc-radio__outer-circle,
+          ::ng-deep .mdc-radio .mdc-radio__native-control:disabled + .mdc-radio__background .mdc-radio__inner-circle {
+            border-color: rgba(255, 255, 255, 0.3);
           }
         }
       }
@@ -122,20 +141,19 @@
     button {
       min-width: 150px;
       padding: 8px 20px;
-      border-radius: 20px;
+      border-radius: 8px;
       font-weight: 500;
-      transition: transform 0.2s;
+      transition: all 0.3s ease;
+      color: white;
+      background: linear-gradient(45deg, #d43bd4, #3071ab);
 
-      &:hover {
-        transform: translateY(-1px);
+      &:hover:not([disabled]) {
+        background: linear-gradient(45deg, #e24be2, #4286c2);
+        box-shadow: 0 0 15px rgba(212, 59, 212, 0.5);
       }
-
-      &[color="accent"] {
-        background-color: #ff4081;
-      }
-
-      &[color="primary"] {
-        background-color: #2196f3;
+      
+      &[disabled] {
+        opacity: 0.6;
       }
     }
   }
@@ -145,7 +163,7 @@
   display: block;
   margin: 30px auto;
   font-size: 16px;
-  background-color: #ff4992;
+  background-color: #262C3A;
   color: white;
 }
 
