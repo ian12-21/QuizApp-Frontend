@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
-import { WelcomePageComponent } from './welcome-page-component/welcome-page-component.component';
-import { CreateQuestionsComponent } from './create-questions-component/create-questions-component.component';
-import { QuizQueueComponent } from './quiz-queue/quiz-queue.component';
-import { LiveQuizComponent } from './live-quiz/live-quiz.component';
+import { WelcomePageComponent } from './pages/welcome-page-component/welcome-page-component.component';
+import { CreateQuestionsComponent } from './pages/create-questions-component/create-questions-component.component';
+import { QuizQueueComponent } from './pages/quiz-queue/quiz-queue.component';
+import { LiveQuizComponent } from './pages/live-quiz/live-quiz.component';
 
 export const routes: Routes = [
   { path: '', component: WelcomePageComponent },

@@ -6,8 +6,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { QuizService } from '../../services/quizContracts.service';
-import { WalletService } from '../../services/wallet.service';
+import { QuizService } from '../../../services/quizContracts.service';
+import { WalletService } from '../../../services/wallet.service';
 
 @Component({
   selector: 'app-live-quiz',

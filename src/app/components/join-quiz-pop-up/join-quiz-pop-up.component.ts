@@ -5,7 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
-import { QuizService } from '../../services/quizContracts.service';
+import { QuizService } from '../../../services/quizContracts.service';
 
 @Component({
   selector: 'app-join-quiz-pop-up',

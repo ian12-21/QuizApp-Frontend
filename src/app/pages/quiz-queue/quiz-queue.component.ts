@@ -4,8 +4,8 @@ import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
-import { QuizService } from '../../services/quizContracts.service';
-import { WalletService } from '../../services/wallet.service';
+import { QuizService } from '../../../services/quizContracts.service';
+import { WalletService } from '../../../services/wallet.service';
 
 @Component({
   selector: 'app-quiz-queue',

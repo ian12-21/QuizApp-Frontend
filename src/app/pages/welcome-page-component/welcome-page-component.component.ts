@@ -1,9 +1,9 @@
 import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { WalletService } from '../../services/wallet.service';
+import { WalletService } from '../../../services/wallet.service';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { CreateQuizPopUpComponent } from '../create-quiz-pop-up/create-quiz-pop-up.component';
-import { JoinQuizPopUpComponent } from '../join-quiz-pop-up/join-quiz-pop-up.component';
+import { CreateQuizPopUpComponent } from '../../components/create-quiz-pop-up/create-quiz-pop-up.component';
+import { JoinQuizPopUpComponent } from '../../components/join-quiz-pop-up/join-quiz-pop-up.component';
 import { Router } from '@angular/router';
 
 @Component({

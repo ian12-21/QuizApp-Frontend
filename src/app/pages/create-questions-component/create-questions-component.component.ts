@@ -7,8 +7,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { WalletService } from '../../services/wallet.service';
-import { QuizService } from '../../services/quizContracts.service';
+import { WalletService } from '../../../services/wallet.service';
+import { QuizService } from '../../../services/quizContracts.service';
 
 interface QuizQuestion {
   question: string;
