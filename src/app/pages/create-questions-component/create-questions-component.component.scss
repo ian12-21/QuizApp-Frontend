@@ -115,10 +115,6 @@
           border-color: rgba(255, 255, 255, 0.6);
         }
         
-        ::ng-deep .mdc-form-field label {
-          color: white;
-        }
-        
         &[disabled] {
           ::ng-deep .mdc-form-field label {
             color: rgba(255, 255, 255, 0.4);
@@ -145,16 +141,25 @@
       font-weight: 500;
       transition: all 0.3s ease;
       color: white;
-      background: linear-gradient(45deg, #d43bd4, #3071ab);
-
-      &:hover:not([disabled]) {
-        background: linear-gradient(45deg, #e24be2, #4286c2);
-        box-shadow: 0 0 15px rgba(212, 59, 212, 0.5);
+      
+      &.mat-primary {
+        background: linear-gradient(45deg, #d43bd4, #3071ab);
+        
+        &:hover:not([disabled]) {
+          background: linear-gradient(45deg, #e24be2, #4286c2);
+          box-shadow: 0 0 15px rgba(212, 59, 212, 0.5);
+        }
       }
       
-      &[disabled] {
-        opacity: 0.6;
+      &.mat-accent {
+        background: linear-gradient(45deg, #3071ab, #00e8b5);
+        
+        &:hover:not([disabled]) {
+          background: linear-gradient(45deg, #4286c2, #00f9c6);
+          box-shadow: 0 0 15px rgba(48, 113, 171, 0.5);
+        }
       }
+      
     }
   }
 }

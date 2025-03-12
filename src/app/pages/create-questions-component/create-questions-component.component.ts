@@ -1,4 +1,4 @@
-import { Component, effect, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -50,7 +50,7 @@ export class CreateQuestionsComponent implements OnInit {
   constructor(
     private router: Router,
     private snackBar: MatSnackBar,
-    public walletService: WalletService,
+    private walletService: WalletService,
     private quizService: QuizService,
     private quizDataService: QuizDataService
   ) {}
@@ -79,10 +79,10 @@ export class CreateQuestionsComponent implements OnInit {
     }
   }
 
-  //disable correct answer if answer is empty
+  //return false if answer is empty
   //returns true if answer is not empty
   hasAnswer(questionIndex: number, answerIndex: number): boolean {
-    return this.questionForms[questionIndex]?.answers[answerIndex]?.trim() !== '';
+    return this.questionForms[questionIndex]?.answers[answerIndex].trim() !== '';
   }
 
   //Resets the correct answer for a question if the currently selected correct answer becomes empty
@@ -110,7 +110,7 @@ export class CreateQuestionsComponent implements OnInit {
     if (questionForm.correctAnswer === null || !this.hasAnswer(index, questionForm.correctAnswer)) {
       this.snackBar.open('Please select a valid correct answer', 'Close', { duration: 3000 });
       return;
-    }
+  }
     //The result is an array of objects where each object represents a non-empty 
     //answer and its index in the original array.
     const nonEmptyAnswerIndices = questionForm.answers
@@ -122,8 +122,6 @@ export class CreateQuestionsComponent implements OnInit {
       answers: nonEmptyAnswers,
       correctAnswer: nonEmptyAnswerIndices.findIndex(a => a.index === questionForm.correctAnswer)
     };
-
-    // console.log('Question saved:', this.questions[index]);
 
     this.savedQuestions[index] = true;
     this.snackBar.open('Question saved!', 'Close', { duration: 2000 });
