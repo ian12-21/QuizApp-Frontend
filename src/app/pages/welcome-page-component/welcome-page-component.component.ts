@@ -1,10 +1,11 @@
-import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { WalletService } from '../../../services/wallet.service';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { CreateQuizPopUpComponent } from '../../components/create-quiz-pop-up/create-quiz-pop-up.component';
 import { JoinQuizPopUpComponent } from '../../components/join-quiz-pop-up/join-quiz-pop-up.component';
 import { Router } from '@angular/router';
+import { QuizDataService } from '../../../services/quiz-data.service';
 
 @Component({
     selector: 'app-welcome-page-component',
@@ -13,20 +14,16 @@ import { Router } from '@angular/router';
     templateUrl: './welcome-page-component.component.html',
     styleUrls: ['./welcome-page-component.component.scss']
 })
-export class WelcomePageComponent implements OnInit {
+export class WelcomePageComponent {
   
   constructor(
     public walletService: WalletService,
     private dialog: MatDialog,
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: object
+    private quizDataService: QuizDataService
   ) {}
 
-  ngOnInit() {
-    if(isPlatformBrowser(this.platformId)){
-      
-    }
-  }
+
 
   async connectWallet() {
     try {
@@ -44,13 +41,16 @@ export class WelcomePageComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) { 
-        this.router.navigate(['/quiz-creation', this.walletService.address()], {
-          state: {
+        // Store quiz data in the service
+        const address = this.walletService.address();
+        if (address) {
+          this.quizDataService.setQuizData({
             quizName: result.quizName,
             numberOfQuestions: result.numberOfQuestions,
-            ownerAddress: this.walletService.address(),
-          }
-        });
+            ownerAddress: address
+          });
+        }
+        this.router.navigate(['/quiz-creation', address]);
       }
     });
   }

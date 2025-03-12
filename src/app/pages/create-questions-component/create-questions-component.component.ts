@@ -1,4 +1,4 @@
-import { Component, effect } from '@angular/core';
+import { Component, effect, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,6 +9,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { WalletService } from '../../../services/wallet.service';
 import { QuizService } from '../../../services/quizContracts.service';
+import { QuizDataService } from '../../../services/quiz-data.service';
 
 interface QuizQuestion {
   question: string;
@@ -37,7 +38,7 @@ interface QuestionForm {
     MatRadioModule
   ]
 })
-export class CreateQuestionsComponent {
+export class CreateQuestionsComponent implements OnInit {
   quizName: string = '';
   numberOfQuestions: number = 0;
   questions: QuizQuestion[] = [];
@@ -50,19 +51,22 @@ export class CreateQuestionsComponent {
     private router: Router,
     private snackBar: MatSnackBar,
     public walletService: WalletService,
-    private quizService: QuizService
-  ) { 
-    const navigation = this.router.getCurrentNavigation();
-    const state = navigation?.extras?.state as { quizName: string, numberOfQuestions: number, ownerAddress: string };
+    private quizService: QuizService,
+    private quizDataService: QuizDataService
+  ) {}
 
-    if (state && this.walletService.address() === state.ownerAddress) {
-      this.quizName = state.quizName;
-      this.numberOfQuestions = state.numberOfQuestions;
-      this.ownerAddress = state.ownerAddress;
+  ngOnInit() {
+    // try to get data from the service
+    const quizData = this.quizDataService.getQuizData();
+    
+    //checking if user is owner happens in auth-guard
+    if (quizData) {
+      // Use data from the service
+      this.quizName = quizData.quizName;
+      this.numberOfQuestions = quizData.numberOfQuestions;
+      this.ownerAddress = quizData.ownerAddress;
       this.initializeQuestions();
-    } else {
-      this.router.navigate(['']);
-    }
+    }  
   }
 
   private initializeQuestions() {
@@ -156,6 +160,9 @@ export class CreateQuestionsComponent {
       );
       console.log('Quiz created:', result);
       this.snackBar.open(`Quiz created! PIN: ${result.pin}`, 'Close', { duration: 5000 });
+      
+      // Clear quiz data from service after successful creation
+      this.quizDataService.clearQuizData();
       
       // Navigate to quiz management or waiting room
       this.router.navigate(['/quiz-queue/quiz-address/', result.pin]);
