@@ -23,8 +23,6 @@ export class WelcomePageComponent {
     private quizDataService: QuizDataService
   ) {}
 
-
-
   async connectWallet() {
     try {
       await this.walletService.connect();

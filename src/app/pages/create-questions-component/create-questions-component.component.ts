@@ -110,7 +110,7 @@ export class CreateQuestionsComponent implements OnInit {
     if (questionForm.correctAnswer === null || !this.hasAnswer(index, questionForm.correctAnswer)) {
       this.snackBar.open('Please select a valid correct answer', 'Close', { duration: 3000 });
       return;
-  }
+    }
     //The result is an array of objects where each object represents a non-empty 
     //answer and its index in the original array.
     const nonEmptyAnswerIndices = questionForm.answers
@@ -150,23 +150,33 @@ export class CreateQuestionsComponent implements OnInit {
         throw new Error('Wallet not connected');
       }
 
-      // Create quiz and get PIN
-      const result = await this.quizService.createQuiz(
-        this.ownerAddress,
-        this.quizName,
-        this.questions
-      );
-      console.log('Quiz created:', result);
+      // Create quiz and get PIN//return quiz address and pin
+      // const result = await this.quizService.createQuiz(
+      //   this.ownerAddress,
+      //   this.quizName,
+      //   this.questions
+      // );
+      const result: { pin: number } = { pin: 308258 };
+
       this.snackBar.open(`Quiz created! PIN: ${result.pin}`, 'Close', { duration: 5000 });
       
+      // Store quiz info in the service for access in quiz-queue
+      this.quizDataService.setActiveQuiz({  
+        pin: result.pin,
+        quizName: this.quizName,
+        creatorAddress: this.ownerAddress,
+        isCreator: true
+      });
       // Clear quiz data from service after successful creation
       this.quizDataService.clearQuizData();
       
-      // Navigate to quiz management or waiting room
+      // this.router.navigate(['/quiz-queue', result.quizAddress, result.pin]); WHEN USING CONTRACT
       this.router.navigate(['/quiz-queue/quiz-address/', result.pin]);
     } catch (error) {
       console.error('Error creating quiz:', error);
       this.snackBar.open('Error creating quiz', 'Close', { duration: 3000 });
     }
   }
+
+
 }

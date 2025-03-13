@@ -16,13 +16,15 @@ html {
   ));
 }/* You can add global styles to this file, and also import other style files */
 html{
+    height: 100%;
     padding: 0;
     margin: 0;
     box-sizing: border-box;
-    background-size: cover;
 }
 
 body{
+    display: block;
+    height: 100%;
     margin: 0;
     font-family: "Space Grotesk", Helvetica, Arial, sans-serif;
     font-size: 20px;
@@ -30,6 +32,8 @@ body{
     line-height: 30px;
     word-spacing: 0px; 
     background: linear-gradient(45deg, #d43bd4, #3071ab, #00e8b5);
+    background-size: cover;
+    background-attachment: fixed;
 }
 
 .container {

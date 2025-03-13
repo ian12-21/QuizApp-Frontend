@@ -9,5 +9,6 @@ export const routes: Routes = [
   { path: '', component: WelcomePageComponent },
   { path: 'quiz-creation/:address', component: CreateQuestionsComponent, canActivate: [QuizCreationGuard] },
   { path: 'quiz-queue/quiz-address/:pin', component: QuizQueueComponent },
+  // { path: 'quiz-queue/:quiz-address/:pin', component: QuizQueueComponent },
   { path: 'active-quiz/:pin', component: LiveQuizComponent }
 ];
