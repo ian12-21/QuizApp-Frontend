@@ -50,7 +50,7 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     try {
       // Get quiz pin from URL
-      this.route.params.subscribe(params => {
+      this.route.params.subscribe(async params => {
         this.quizPin = params['pin'] || '';
         if (!this.quizPin) {
           console.error('No quiz PIN provided');
@@ -59,7 +59,7 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
         }
 
         // Initialize quiz data
-        this.initializeQuiz();
+        setTimeout(() => this.initializeQuiz(), 100);
       });
     } catch (error) {
       console.error('Error initializing live quiz:', error);

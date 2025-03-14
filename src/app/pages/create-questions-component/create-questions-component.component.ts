@@ -156,7 +156,7 @@ export class CreateQuestionsComponent implements OnInit {
       //   this.quizName,
       //   this.questions
       // );
-      const result: { pin: number } = { pin: 308258 };
+      const result: { quizAddress: string, pin: string } = { quizAddress: '0xa5783e3FEAa3e2327c51D0487011190Ce3d04e9f', pin: '308258' };
 
       this.snackBar.open(`Quiz created! PIN: ${result.pin}`, 'Close', { duration: 5000 });
       
@@ -164,14 +164,14 @@ export class CreateQuestionsComponent implements OnInit {
       this.quizDataService.setActiveQuiz({  
         pin: result.pin,
         quizName: this.quizName,
+        quizAddress: result.quizAddress,
         creatorAddress: this.ownerAddress,
         isCreator: true
       });
       // Clear quiz data from service after successful creation
       this.quizDataService.clearQuizData();
       
-      // this.router.navigate(['/quiz-queue', result.quizAddress, result.pin]); WHEN USING CONTRACT
-      this.router.navigate(['/quiz-queue/quiz-address/', result.pin]);
+      this.router.navigate(['/quiz-queue', result.quizAddress, result.pin]);
     } catch (error) {
       console.error('Error creating quiz:', error);
       this.snackBar.open('Error creating quiz', 'Close', { duration: 3000 });

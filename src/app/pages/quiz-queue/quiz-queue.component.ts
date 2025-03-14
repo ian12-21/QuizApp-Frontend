@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, effect, PLATFORM_ID, Inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser, NumberFormatStyle } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
@@ -23,78 +23,80 @@ export class QuizQueueComponent implements OnInit, OnDestroy {
   private refreshInterval: any;
   creatorAddress: string = '';
   quizData: any;
+  private isBrowser: boolean;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private quizService: QuizService,
     public walletService: WalletService,
-    private quizDataService: QuizDataService
-  ) {}
+    private quizDataService: QuizDataService,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit() {
+    // Skip initialization on server-side to avoid sessionStorage errors
+    if (!this.isBrowser) {
+      return;
+    }
+
     try {
       const routePin = this.route.snapshot.params['pin'];
       const activeQuiz = this.quizDataService.getActiveQuiz();
 
-      if(routePin){
+      if (routePin) {
         this.quizPin = routePin;
         this.loadQuizByPin(routePin);
-      }else if(activeQuiz){
+      } else if (activeQuiz) {
         this.quizPin = activeQuiz.pin;
         this.loadQuizByPin(activeQuiz.pin);
-      }else{
+      } else {
         this.router.navigate(['/']);
       }
     } catch (error) {
       console.error('Error initializing quiz queue:', error);
-      // this.router.navigate(['/']);
+      this.router.navigate(['/']);
     }
   }
 
-  private async loadQuizByPin(pin: string){
-    try{
+  private async loadQuizByPin(pin: string) {
+    if (!this.isBrowser) return;
+    
+    try {
       const quizInfo = await this.quizService.getQuizByPin(pin);
-      if(quizInfo){
+      if (quizInfo) {
         this.quizAddress = quizInfo.quizAddress;
         this.creatorAddress = quizInfo.creatorAddress;
         this.quizName = quizInfo.quizName;
 
         this.quizData = quizInfo;
 
-        this.quizDataService.setActiveQuiz({
-          pin: pin,
-          quizName: quizInfo.quizName,
-          creatorAddress: quizInfo.creatorAddress,
-          quizAddress: quizInfo.quizAddress,
-          isCreator: this.creatorAddress === this.walletService.address()
-        });
-
         this.startPlayerRefresh();
 
-        if(this.creatorAddress !== this.walletService.address()){
-          // The non-null assertion operator (!) tells TypeScript that address() will not be null
-          // This allows us to push the address without TypeScript warning about possible null values
-          this.players.push(this.walletService.address()!);
+        const userAddress = this.walletService.address();
+        if (this.creatorAddress !== userAddress && userAddress) {
+          this.players.push(userAddress);
         }
-      }else{
+      } else {
         //this.router.navigate(['/']);
       }
-    }catch(error){
+    } catch (error) {
       console.error('Error loading quiz by pin:', error);
       //this.router.navigate(['/']);
     }
   }
 
   private startPlayerRefresh() {
-    if (this.quizPin) {
-      this.refreshPlayers();
+    if (!this.isBrowser || !this.quizPin) return;
+    
+    this.refreshPlayers();
 
-      // Refresh player list every 5 seconds
-      this.refreshInterval = setInterval(() => {
-        this.refreshPlayers();
-      }, 5000);
-    }
+    // Refresh player list every 5 seconds
+    this.refreshInterval = setInterval(() => {
+      this.refreshPlayers();
+    }, 5000);
   }
 
   ngOnDestroy() {
@@ -104,11 +106,9 @@ export class QuizQueueComponent implements OnInit, OnDestroy {
   }
 
   async refreshPlayers() {
+    if (!this.isBrowser || !this.quizPin) return;
+    
     try {
-      if (!this.quizPin) {
-        return;
-      }
-
       if (this.quizData && Array.isArray(this.quizData.playerAddresses)) {
         const uniquePlayers = new Set([
           ...this.players,
@@ -121,7 +121,11 @@ export class QuizQueueComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  //we should create instance of quiz in the database 
   async startQuiz() {
+    if (!this.isBrowser) return;
+    
     try {
       if (!this.quizPin || !this.quizAddress || !this.creatorAddress) {
         throw new Error('Missing required quiz information');

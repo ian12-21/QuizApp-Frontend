@@ -298,22 +298,22 @@ export class QuizService {
     //     }
     // }
 
-    getQuizContract(quizAddress: string): QuizContract {
-        return new ethers.Contract(
-            quizAddress,
-            quizAbi,
-            this.signer
-        ) as unknown as QuizContract;
-    }
+    // getQuizContract(quizAddress: string): QuizContract {
+    //     return new ethers.Contract(
+    //         quizAddress,
+    //         quizAbi,
+    //         this.signer
+    //     ) as unknown as QuizContract;
+    // }
 
-    async isQuizStarted(quizAddress: string): Promise<boolean> {
-        const quiz = this.getQuizContract(quizAddress);
-        return await quiz.isStarted();
-    }
+    // async isQuizStarted(quizAddress: string): Promise<boolean> {
+    //     const quiz = this.getQuizContract(quizAddress);
+    //     return await quiz.isStarted();
+    // }
 
-    async isQuizFinished(quizAddress: string): Promise<boolean> {
-        const quiz = this.getQuizContract(quizAddress);
-        return await quiz.isFinished();
-    }
+    // async isQuizFinished(quizAddress: string): Promise<boolean> {
+    //     const quiz = this.getQuizContract(quizAddress);
+    //     return await quiz.isFinished();
+    // }
 
 }
