@@ -80,11 +80,11 @@ export class QuizQueueComponent implements OnInit, OnDestroy {
           this.players.push(userAddress);
         }
       } else {
-        //this.router.navigate(['/']);
+        this.router.navigate(['/']);
       }
     } catch (error) {
       console.error('Error loading quiz by pin:', error);
-      //this.router.navigate(['/']);
+      this.router.navigate(['/']);
     }
   }
 
@@ -131,17 +131,17 @@ export class QuizQueueComponent implements OnInit, OnDestroy {
         throw new Error('Missing required quiz information');
       }
 
-      // const startTime = await this.quizService.startQuiz(
-      //   this.quizAddress,
-      //   this.creatorAddress,
-      //   this.quizPin,
-      // );
+      const startTime = await this.quizService.startQuiz(
+         this.quizAddress,
+         this.creatorAddress,
+         this.quizPin,
+      );
 
       console.log('Quiz started successfully');
       // Navigate to active quiz page
       this.router.navigate(['/active-quiz/', this.quizPin], {
         state: {
-          // startTime
+          startTime: startTime.startTime
         },
       });
     } catch (error) {

@@ -150,14 +150,14 @@ export class CreateQuestionsComponent implements OnInit {
         throw new Error('Wallet not connected');
       }
 
-      // Create quiz and get PIN//return quiz address and pin
-      // const result = await this.quizService.createQuiz(
-      //   this.ownerAddress,
-      //   this.quizName,
-      //   this.questions
-      // );
-      const result: { quizAddress: string, pin: string } = { quizAddress: '0xa5783e3FEAa3e2327c51D0487011190Ce3d04e9f', pin: '308258' };
-
+      //Create quiz and get PIN//return quiz address and pin
+      const result = await this.quizService.createQuiz(
+        this.ownerAddress,
+        this.quizName,
+        this.questions
+      );
+      //const result: { quizAddress: string, pin: string } = { quizAddress: '0xa5783e3FEAa3e2327c51D0487011190Ce3d04e9f', pin: '308258' };
+      
       this.snackBar.open(`Quiz created! PIN: ${result.pin}`, 'Close', { duration: 5000 });
       
       // Store quiz info in the service for access in quiz-queue
@@ -169,7 +169,7 @@ export class CreateQuestionsComponent implements OnInit {
         isCreator: true
       });
       // Clear quiz data from service after successful creation
-      this.quizDataService.clearQuizData();
+      //this.quizDataService.clearQuizData();
       
       this.router.navigate(['/quiz-queue', result.quizAddress, result.pin]);
     } catch (error) {

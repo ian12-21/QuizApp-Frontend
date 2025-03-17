@@ -184,28 +184,6 @@ export class QuizService {
         }
     }
 
-    // async getQuizByAddress(quizAddress: string) {
-    //     try {
-    //         console.log('Fetching quiz for address:', quizAddress);
-    //         const response = await firstValueFrom(
-    //             this.http.get<{
-    //                 pin: string,
-    //                 quizData: {
-    //                     quizAddress: string,
-    //                     answersHash: string,
-    //                     playerAddresses: string[]
-    //                 }
-    //             }>(`${API_URL}/quiz/address/${quizAddress}`)
-    //         );
-    //         return response;
-    //         console.log('Backend response:', response);
-    //         throw new Error('Invalid response format from server');
-    //     } catch (error) {
-    //         console.error('Error fetching quiz:', error);
-    //         throw error instanceof Error ? error : new Error('Quiz not found');
-    //     }
-    // }
-
     async startQuiz(quizAddress: string, creatorAddress: string, pin: string) {
         try {
             const quizData = await this.getQuizByPin(pin);
