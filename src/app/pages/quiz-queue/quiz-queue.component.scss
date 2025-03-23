@@ -1,76 +1,216 @@
-.quiz-queue-container {
-  padding: 2rem;
-  max-width: 800px;
-  margin: 0 auto;
+.quiz-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 100px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  h1 {
+    margin: 0;
+    font-size: 24px;
+    color: white;
+  }
+
+  .quiz-status {
+    margin-left: 20px;
+    padding: 5px 10px;
+    background-color: #d43bd4;
+    border-radius: 4px;
+    font-size: 18px;
+    color: white;
+  }
 }
 
-.quiz-info {
-  margin-bottom: 2rem;
+.quiz-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
 
-  mat-card-header {
-    margin-bottom: 1rem;
-    
-    mat-card-title {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-    }
+.quiz-card {
+  background-color: #262C3A;
+  color: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 30px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
+  }
+
+  h2 {
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
   }
 }
 
 .quiz-details {
-  margin: 1.5rem 0;
+  margin-bottom: 30px;
   
-  .quiz-address, .quiz-pin {
+  .detail-item {
     word-break: break-all;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
     font-family: monospace;
-    background: #f5f5f5;
-    padding: 1rem;
-    border-radius: 4px;
-    margin-bottom: 1rem;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    
+    strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
     
     .address, .pin {
-      margin-left: 0.5rem;
       font-weight: 500;
+      display: inline-block;
+      max-width: 100%;
+    }
+  }
+
+  .quiz-address {
+    background: rgba(255, 255, 255, 0.1);
+    
+    a {
+      color: #d43bd4;
+      text-decoration: none;
+      word-break: break-all;
+      word-wrap: break-word;
+      
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 
   .quiz-pin {
-    background: #e3f2fd;
+    background: rgba(0, 232, 181, 0.2);
+    
     .pin {
       font-size: 1.2rem;
       letter-spacing: 2px;
+      color: rgba(0, 232, 181, 0.8);
     }
   }
 }
 
+.players-section {
+  margin-bottom: 30px;
+}
+
 .players-list {
-  h3 {
-    margin-bottom: 1rem;
-    color: #333;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  
+  .player-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 12px 15px;
+    border-radius: 8px;
+    transition: background 0.2s;
+    word-break: break-all;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    font-family: monospace;
+    font-size: 14px;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
   }
   
   .no-players {
-    color: #666;
+    color: rgba(255, 255, 255, 0.6);
     font-style: italic;
+    padding: 15px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
   }
 }
 
-mat-list-item {
-  margin-bottom: 0.5rem;
-  background: #fafafa;
-  border-radius: 4px;
-  
-  &:hover {
-    background: #f0f0f0;
-  }
-}
-
-mat-card-actions {
-  padding: 1rem;
+.quiz-actions {
   display: flex;
   justify-content: center;
+  margin-top: 30px;
 
   button {
     min-width: 150px;
+    padding: 10px 25px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    color: white;
+    
+    &.mat-primary {
+      background: linear-gradient(45deg, #d43bd4, #3071ab);
+      
+      &:hover:not([disabled]) {
+        background: linear-gradient(45deg, #e24be2, #4286c2);
+        box-shadow: 0 0 15px rgba(212, 59, 212, 0.5);
+      }
+      
+      &[disabled] {
+        opacity: 0.6;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .quiz-header {
+    flex-direction: column;
+    gap: 15px;
+    
+    .quiz-status {
+      margin-left: 0;
+    }
+  }
+  
+  .quiz-card {
+    padding: 20px 15px;
+  }
+  
+  .quiz-details .detail-item {
+    padding: 12px;
+    font-size: 14px;
+  }
+  
+  .player-item {
+    font-size: 13px !important;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .quiz-card {
+    padding: 15px 10px;
+  }
+  
+  .quiz-details .detail-item {
+    padding: 10px 8px;
+    font-size: 12px;
+    
+    strong {
+      font-size: 14px;
+    }
+  }
+  
+  .player-item {
+    padding: 10px 8px !important;
+    font-size: 12px !important;
+  }
+  
+  .quiz-pin .pin {
+    font-size: 1rem !important;
+    letter-spacing: 1px !important;
   }
 }

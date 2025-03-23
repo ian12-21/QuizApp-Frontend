@@ -1,23 +1,36 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
-import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { QuizService } from '../../../services/quizContracts.service';
 import { WalletService } from '../../../services/wallet.service';
+
+// Import the service with its actual export name
+import { QuizService } from '../../../services/quizContracts.service';
+
+interface Question {
+  question: string;
+  answers: string[];
+  correctAnswer: number;
+}
+
+interface UserAnswers {
+  quizAddress: string;
+  answers: number[];
+}
 
 @Component({
   selector: 'app-live-quiz',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatCardModule,
     MatButtonModule,
     MatRadioModule,
-    FormsModule,
     MatDialogModule
   ],
   templateUrl: './live-quiz.component.html',
@@ -28,47 +41,50 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
   quizAddress: string = '';
   quizName: string = '';
   creatorAddress: string = '';
-  questions: Array<{ question: string; answers: string[]; correctAnswer: number }> = [];
-  currentQuestion: { question: string; answers: string[]; correctAnswer: number } | null = null;
+  questions: Question[] = [];
+  currentQuestion: Question | null = null;
   currentQuestionIndex: number = 0;
   selectedAnswer: number | null = null;
-  userAnswers: { address: string | null; answers: number[] } = { address: '', answers: [] };
+  userAnswers: UserAnswers = { quizAddress: '', answers: [] };
   isCreator: boolean = false;
   private questionTimer: any;
+  private timerInterval: any;
   private readonly QUESTION_DURATION = 20000; // 20 seconds
+  isFinished: boolean = false;  
+  timerWidth: number = 100; // Start at 100%
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private quizService: QuizService,
-    private walletService: WalletService,
+    public walletService: WalletService,
     private dialog: MatDialog
   ) {
-    this.userAnswers.address = this.walletService.address();
+    this.userAnswers.quizAddress = this.walletService.address() || '';
   }
 
   async ngOnInit() {
     try {
-      // Get quiz pin from URL
-      this.route.params.subscribe(async params => {
-        this.quizPin = params['pin'] || '';
-        if (!this.quizPin) {
-          console.error('No quiz PIN provided');
-          this.router.navigate(['/']);
-          return;
-        }
-
-        // Initialize quiz data
-        setTimeout(() => this.initializeQuiz(), 100);
+      this.route.params.subscribe(params => {
+        this.quizPin = params['pin'];
+        this.initializeQuiz();
       });
     } catch (error) {
-      console.error('Error initializing live quiz:', error);
+      console.error('Error in ngOnInit:', error);
+      this.router.navigate(['/']);
     }
   }
 
   ngOnDestroy() {
+    this.clearTimers();
+  }
+
+  private clearTimers() {
     if (this.questionTimer) {
       clearInterval(this.questionTimer);
+    }
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
     }
   }
 
@@ -76,17 +92,25 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
     try {
       // Fetch quiz data here
       const quizInfo = await this.quizService.getQuizByPin(this.quizPin);
+      console.log(quizInfo);
       
       if (quizInfo) {
         this.quizAddress = quizInfo.quizAddress;
         this.quizName = quizInfo.quizName;
         this.creatorAddress = quizInfo.creatorAddress;
         this.questions = quizInfo.questions;
-        this.isCreator = this.creatorAddress === this.walletService.address();
+        this.userAnswers.quizAddress = this.quizAddress;
+        this.userAnswers.answers = new Array(this.questions.length).fill(-1);
+        
+        // Check if current user is the creator
+        this.isCreator = this.walletService.address() === quizInfo.creatorAddress;
         
         if (this.questions.length > 0) {
-          this.currentQuestion = this.questions[this.currentQuestionIndex];
-          this.startQuestionTimer();
+          this.currentQuestion = this.questions[0];
+          this.currentQuestionIndex = 0;
+          
+          // Start the timer for the first question
+          this.startTimers();
         }
       }
     } catch (error) {
@@ -95,16 +119,38 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
     }
   }
 
-  private startQuestionTimer() {
-    this.questionTimer = setInterval(() => {
+  private startTimers() {
+    // Reset timer width to 100%
+    this.timerWidth = 100;
+    
+    // Clear any existing timers
+    this.clearTimers();
+    
+    // Create a timer that updates the width every 200ms
+    const updateFrequency = 200; // milliseconds
+    const steps = this.QUESTION_DURATION / updateFrequency;
+    const decrementPerStep = 100 / steps;
+    
+    this.timerInterval = setInterval(() => {
+      this.timerWidth = Math.max(0, this.timerWidth - decrementPerStep);
+    }, updateFrequency);
+    
+    // Set the question timer to move to the next question
+    this.questionTimer = setTimeout(() => {
+      // Clear the timer interval
+      clearInterval(this.timerInterval);
+      
       if (this.currentQuestionIndex < this.questions.length - 1) {
         this.currentQuestionIndex++;
         this.currentQuestion = this.questions[this.currentQuestionIndex];
         this.selectedAnswer = null;
+        
+        // Start the timer for the next question
+        this.startTimers();
       } else {
-        clearInterval(this.questionTimer);
+        // Last question finished
         if (this.isCreator) {
-          this.showEndQuizButton();
+          this.isFinished = true;
         }
       }
     }, this.QUESTION_DURATION);
@@ -116,32 +162,12 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
     }
   }
 
-  private showEndQuizButton() {
-    // Implementation for showing end quiz button and handling quiz completion
-    // This will be implemented when we create the template
-  }
-
   async endQuiz() {
     if (!this.isCreator) return;
 
     try {
-      // Commented out until backend endpoint is ready
-      /*const result = await this.quizService.endQuiz(
-        this.quizAddress,
-        this.creatorAddress,
-        this.quizPin,
-        {} // Player scores will be calculated on backend
-      );
-
-      // Show winner dialog
-      this.dialog.open(WinnerDialogComponent, {
-        data: {
-          winner: result.winner,
-          score: result.score
-        }
-      });*/
-      this.router.navigate(['/']);
-      this.ngOnDestroy(); 
+      //await this.quizService.endQuiz(this.quizAddress);
+      this.router.navigate(['/quiz-results', this.quizPin]);
     } catch (error) {
       console.error('Error ending quiz:', error);
     }

@@ -9,6 +9,9 @@
         <mat-error *ngIf="quizForm.get('quizName')?.hasError('required')">
           Quiz name is required
         </mat-error>
+        <mat-error *ngIf="quizForm.get('quizName')?.hasError('onlyNumbers')">
+          Quiz name cannot contain only numbers
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="fill">
@@ -22,6 +25,9 @@
         </mat-error>
         <mat-error *ngIf="quizForm.get('numberOfQuestions')?.hasError('max')">
           Maximum 20 questions allowed
+        </mat-error>
+        <mat-error *ngIf="quizForm.get('numberOfQuestions')?.hasError('notNumber')">
+          Please enter numbers only
         </mat-error>
       </mat-form-field>
     </div>

@@ -1,48 +1,49 @@
-<div class="live-quiz-container">
-  <mat-card class="quiz-card">
-    <mat-card-header>
-      <mat-card-title>{{ quizName }}</mat-card-title>
-      <mat-card-subtitle>Question {{ currentQuestionIndex + 1 }} of {{ questions.length }}</mat-card-subtitle>
-    </mat-card-header>
+<div class="quiz-header">
+  <h1>{{ quizName }}</h1>
+  <span class="question-count">Question {{ currentQuestionIndex + 1 }} of {{ questions.length }}</span>
+</div>
 
-    <mat-card-content *ngIf="currentQuestion">
-      <div class="question-timer">
-        <div class="timer-bar"></div>
-      </div>
+<div class="quiz-container">
+  <div class="quiz-card" *ngIf="currentQuestion">
+    <div class="question-timer">
+      <!-- Use inline style for direct animation control -->
+      <div id="timer-bar" class="timer-bar" [style.width.%]="timerWidth"></div>
+    </div>
 
-      <div class="question-content">
-        <h2>{{ currentQuestion.question }}</h2>
-        
-        <mat-radio-group 
-          [(ngModel)]="selectedAnswer" 
-          class="answer-options"
-          [disabled]="isCreator">
+    <div class="question-content">
+      <h2>{{ currentQuestion.question }}</h2>
+      
+      <div class="answer-options">
+        <div *ngFor="let answer of currentQuestion.answers; let i = index" 
+             class="answer-option"
+             [class.selected]="selectedAnswer === i"
+             (click)="!isCreator && (selectedAnswer = i)">
           <mat-radio-button 
-            *ngFor="let answer of currentQuestion.answers; let i = index" 
             [value]="i"
-            class="answer-option">
+            [checked]="selectedAnswer === i"
+            [disabled]="isCreator">
             {{ answer }}
           </mat-radio-button>
-        </mat-radio-group>
+        </div>
       </div>
+    </div>
 
-      <div class="action-buttons">
-        <button 
-          mat-raised-button 
-          color="primary"
-          (click)="submitAnswer()"
-          [disabled]="selectedAnswer === null || isCreator">
-          Submit Answer
-        </button>
+    <div class="quiz-actions">
+      <button 
+        mat-raised-button 
+        color="primary"
+        (click)="submitAnswer()"
+        [disabled]="selectedAnswer === null || isCreator">
+        Submit Answer
+      </button>
 
-        <button 
-          *ngIf="isCreator && currentQuestionIndex === questions.length - 1"
-          mat-raised-button 
-          color="accent"
-          (click)="endQuiz()">
-          End Quiz
-        </button>
-      </div>
-    </mat-card-content>
-  </mat-card>
+      <button 
+        *ngIf="isCreator && isFinished"
+        mat-raised-button 
+        color="accent"
+        (click)="endQuiz()">
+        End Quiz
+      </button>
+    </div>
+  </div>
 </div>
