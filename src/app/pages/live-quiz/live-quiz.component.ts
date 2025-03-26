@@ -167,7 +167,7 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
 
     try {
       //await this.quizService.endQuiz(this.quizAddress);
-      this.router.navigate(['/quiz-results', this.quizPin]);
+      this.router.navigate(['/']);
     } catch (error) {
       console.error('Error ending quiz:', error);
     }

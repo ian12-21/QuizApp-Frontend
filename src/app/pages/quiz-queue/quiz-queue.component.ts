@@ -1,12 +1,13 @@
-import { Component, OnInit, OnDestroy, effect, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, OnInit, PLATFORM_ID, Inject, signal, effect } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule, isPlatformBrowser, NumberFormatStyle } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
 import { QuizService } from '../../../services/quizContracts.service';
 import { WalletService } from '../../../services/wallet.service';
 import { QuizDataService } from '../../../services/quiz-data.service';
+import { SocketService } from '../../../services/socket.service';
 
 @Component({
   selector: 'app-quiz-queue',
@@ -15,14 +16,13 @@ import { QuizDataService } from '../../../services/quiz-data.service';
   standalone: true,
   imports: [CommonModule, MatCardModule, MatListModule, MatButtonModule],
 })
-export class QuizQueueComponent implements OnInit, OnDestroy {
-  quizAddress: string = '';
-  quizName: string = '';
-  quizPin: string = '';
-  players: string[] = [];
-  private refreshInterval: any;
-  creatorAddress: string = '';
-  quizData: any;
+export class QuizQueueComponent implements OnInit {
+  quizAddress = signal('');
+  quizName = signal('');
+  quizPin = signal('');
+  players = signal<string[]>([]);
+  creatorAddress = signal('');
+  quizData = signal<any>(null);
   private isBrowser: boolean;
 
   constructor(
@@ -31,9 +31,23 @@ export class QuizQueueComponent implements OnInit, OnDestroy {
     private quizService: QuizService,
     public walletService: WalletService,
     private quizDataService: QuizDataService,
+    private socketService: SocketService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
+
+    // Use effect to react to players changes
+    effect(() => {
+      if (this.isBrowser) {
+        try {
+          const servicePlayers = this.socketService.players();
+          this.players.set(Array.isArray(servicePlayers) ? servicePlayers : []);
+        } catch (error) {
+          console.error('Error initializing players:', error);
+          this.players.set([]);
+        }
+      }
+    });
   }
 
   ngOnInit() {
@@ -47,14 +61,24 @@ export class QuizQueueComponent implements OnInit, OnDestroy {
       const activeQuiz = this.quizDataService.getActiveQuiz();
 
       if (routePin) {
-        this.quizPin = routePin;
+        this.quizPin.set(routePin);
         this.loadQuizByPin(routePin);
       } else if (activeQuiz) {
-        this.quizPin = activeQuiz.pin;
+        this.quizPin.set(activeQuiz.pin);
         this.loadQuizByPin(activeQuiz.pin);
       } else {
         this.router.navigate(['/']);
       }
+
+      const userAddress = this.walletService.address();
+      if(userAddress && userAddress !== this.creatorAddress()){
+        this.socketService.joinQuizQueue(this.quizPin(), userAddress);
+      }
+
+      this.socketService.onQuizStart((data) => {
+        this.router.navigate([data.redirectUrl]);
+      });
+
     } catch (error) {
       console.error('Error initializing quiz queue:', error);
       this.router.navigate(['/']);
@@ -67,18 +91,10 @@ export class QuizQueueComponent implements OnInit, OnDestroy {
     try {
       const quizInfo = await this.quizService.getQuizByPin(pin);
       if (quizInfo) {
-        this.quizAddress = quizInfo.quizAddress;
-        this.creatorAddress = quizInfo.creatorAddress;
-        this.quizName = quizInfo.quizName;
-
-        this.quizData = quizInfo;
-
-        this.startPlayerRefresh();
-
-        const userAddress = this.walletService.address();
-        if (this.creatorAddress !== userAddress && userAddress) {
-          this.players.push(userAddress);
-        }
+        this.quizAddress.set(quizInfo.quizAddress);
+        this.creatorAddress.set(quizInfo.creatorAddress);
+        this.quizName.set(quizInfo.quizName);
+        this.quizData.set(quizInfo);
       } else {
         this.router.navigate(['/']);
       }
@@ -88,62 +104,15 @@ export class QuizQueueComponent implements OnInit, OnDestroy {
     }
   }
 
-  private startPlayerRefresh() {
-    if (!this.isBrowser || !this.quizPin) return;
-    
-    this.refreshPlayers();
-
-    // Refresh player list every 5 seconds
-    this.refreshInterval = setInterval(() => {
-      this.refreshPlayers();
-    }, 5000);
-  }
-
-  ngOnDestroy() {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-    }
-  }
-
-  async refreshPlayers() {
-    if (!this.isBrowser || !this.quizPin) return;
-    
-    try {
-      if (this.quizData && Array.isArray(this.quizData.playerAddresses)) {
-        const uniquePlayers = new Set([
-          ...this.players,
-          ...this.quizData.playerAddresses,
-        ]);
-        this.players = Array.from(uniquePlayers);
-      }
-    } catch (error) {
-      console.error('Error refreshing players:', error);
-    }
-  }
-
-
-  //we should create instance of quiz in the database 
   async startQuiz() {
     if (!this.isBrowser) return;
     
     try {
-      if (!this.quizPin || !this.quizAddress || !this.creatorAddress) {
+      if (!this.quizPin() || !this.quizAddress() || !this.creatorAddress()) {
         throw new Error('Missing required quiz information');
       }
 
-      // const startTime = await this.quizService.startQuiz(
-      //    this.quizAddress,
-      //    this.creatorAddress,
-      //    this.quizPin,
-      // );
-
-      console.log('Quiz started successfully');
-      // Navigate to active quiz page
-      this.router.navigate(['/active-quiz/', this.quizPin], {
-        state: {
-          // startTime: startTime.startTime
-        },
-      });
+      this.socketService.startQuiz(this.quizPin());
     } catch (error) {
       console.error('Error starting quiz:', error);
     }

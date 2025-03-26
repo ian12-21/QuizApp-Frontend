@@ -10,6 +10,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { WalletService } from '../../../services/wallet.service';
 import { QuizService } from '../../../services/quizContracts.service';
 import { QuizDataService } from '../../../services/quiz-data.service';
+import { SocketService } from '../../../services/socket.service';
 
 interface QuizQuestion {
   question: string;
@@ -52,7 +53,8 @@ export class CreateQuestionsComponent implements OnInit {
     private snackBar: MatSnackBar,
     private walletService: WalletService,
     private quizService: QuizService,
-    private quizDataService: QuizDataService
+    private quizDataService: QuizDataService,
+    private socketService: SocketService
   ) {}
 
   ngOnInit() {
@@ -145,19 +147,20 @@ export class CreateQuestionsComponent implements OnInit {
     }
 
     try {
-      const address = this.walletService.address();
-      if (!address) {
+      if (!this.walletService.address()) {
         throw new Error('Wallet not connected');
       }
 
-      //Create quiz and get PIN//return quiz address and pin
-      // const result = await this.quizService.createQuiz(
-      //   this.ownerAddress,
-      //   this.quizName,
-      //   this.questions
-      // );
-      const result: { quizAddress: string, pin: string } = { quizAddress: '0x935d00FEA1B6c3F0c9670F5F5A1c2E3c0E9c55D4', pin: '286688' };
+      //return quiz address and pin
+      const result = await this.quizService.createQuiz(
+        this.ownerAddress,
+        this.quizName,
+        this.questions
+      );
+      // const result: { quizAddress: string, pin: string } = { quizAddress: '0x935d00FEA1B6c3F0c9670F5F5A1c2E3c0E9c55D4', pin: '286688' };
       
+      this.socketService.createQuizRoom(result.pin, this.ownerAddress);
+
       this.snackBar.open(`Quiz created! PIN: ${result.pin}`, 'Close', { duration: 5000 });
       
       // Store quiz info in the service for access in quiz-queue

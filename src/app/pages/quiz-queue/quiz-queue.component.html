@@ -1,5 +1,5 @@
 <div class="quiz-header">
-  <h1>{{ quizName }}</h1>
+  <h1>{{ quizName() }}</h1>
   <span class="quiz-status">Waiting Room</span>
 </div>
 
@@ -8,19 +8,19 @@
     <div class="quiz-details">
       <div class="detail-item quiz-address">
         <strong>Quiz Address:</strong> 
-        <a href="https://amoy.polygonscan.com/address/{{ quizAddress }}" target="_blank" class="address">{{ quizAddress }}</a>
+        <a href="https://amoy.polygonscan.com/address/{{ quizAddress() }}" target="_blank" class="address">{{ quizAddress() }}</a>
       </div>
       
       <div *ngIf="quizPin" class="detail-item quiz-pin">
         <strong>Quiz PIN:</strong> 
-        <span class="pin">{{ quizPin }}</span>
+        <span class="pin">{{ quizPin() }}</span>
       </div>
     </div>
 
     <div class="players-section">
-      <h2>Joined Players ({{ players.length }})</h2>
+      <h2>Joined Players ({{ players().length }})</h2>
       <div class="players-list">
-        <div *ngFor="let player of players" class="player-item">
+        <div *ngFor="let player of players()" class="player-item">
           {{ player }}
         </div>
         <div *ngIf="players.length === 0" class="no-players">
@@ -29,9 +29,9 @@
       </div>
     </div>
 
-    <div class="quiz-actions" *ngIf="creatorAddress === this.walletService.address()">
+    <div class="quiz-actions" *ngIf="creatorAddress() === this.walletService.address()">
       <button mat-raised-button color="primary" 
-              [disabled]="players.length === 0"
+
               (click)="startQuiz()">
         Start Quiz
       </button>
