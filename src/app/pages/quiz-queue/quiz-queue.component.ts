@@ -36,12 +36,11 @@ export class QuizQueueComponent implements OnInit {
   ) {
     this.isBrowser = isPlatformBrowser(this.platformId);
 
-    // Use effect to react to players changes
+    // Use effect to react to players changes with extensive logging
     effect(() => {
       if (this.isBrowser) {
         try {
-          const servicePlayers = this.socketService.players();
-          this.players.set(Array.isArray(servicePlayers) ? servicePlayers : []);
+          this.players.set(this.socketService.players());        
         } catch (error) {
           console.error('Error initializing players:', error);
           this.players.set([]);
@@ -106,6 +105,8 @@ export class QuizQueueComponent implements OnInit {
 
   async startQuiz() {
     if (!this.isBrowser) return;
+
+    await this.quizService.savePlayers(this.quizPin(), this.players());
     
     try {
       if (!this.quizPin() || !this.quizAddress() || !this.creatorAddress()) {

@@ -1,0 +1,132 @@
+.leaderboard-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.leaderboard-header {
+  text-align: center;
+  margin-bottom: 20px;
+  color: white;
+
+  h1 {
+    margin-bottom: 5px;
+    font-size: 2rem;
+  }
+
+  .subtitle {
+    font-size: 1.2rem;
+    color: #d43bd4;
+  }
+}
+
+.leaderboard-card {
+  background-color: #262C3A;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 800px;
+  padding: 20px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  color: white;
+  position: relative;
+}
+
+.leaderboard-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 10px;
+  padding: 3px;
+  background: linear-gradient(45deg, #d43bd4, #3071ab, #00e8b5);
+  -webkit-mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: 
+      linear-gradient(#fff 0 0) content-box, 
+      linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.leaderboard-content {
+  margin-bottom: 20px;
+
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: white;
+    text-align: center;
+  }
+}
+
+.player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.player-header, .player-item {
+  display: grid;
+  grid-template-columns: 0.5fr 2fr 1fr;
+  padding: 12px;
+  border-radius: 8px;
+  align-items: center;
+}
+
+.player-header {
+  background-color: rgba(255, 255, 255, 0.1);
+  font-weight: bold;
+  color: #00e8b5;
+}
+
+.player-item {
+  background-color: rgba(255, 255, 255, 0.05);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+  }
+}
+
+.rank {
+  text-align: center;
+  font-weight: bold;
+}
+
+.player-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score {
+  text-align: right;
+  font-weight: bold;
+  color: #d43bd4;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .leaderboard-card {
+    padding: 15px;
+  }
+
+  .leaderboard-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .leaderboard-content h2 {
+    font-size: 1.2rem;
+  }
+
+  .player-header, .player-item {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+}

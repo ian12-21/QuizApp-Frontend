@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, effect } from '@angular/core';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../environments/environment';
 import { WalletService } from '../services/wallet.service';
@@ -11,31 +11,62 @@ export class SocketService {
   public players = signal<string[]>([]);
 
   constructor(private walletService: WalletService) {
-    // Get wallet address safely
-    const address = this.walletService.address() || '';
+    // Use an effect to react to wallet address changes
+    effect(() => {
+      const address = this.walletService.address();   
+      // Ensure we have a valid address before connecting
+      if (address) {
+        this.connectSocket(address);
+      } else {
+        this.disconnect();
+      }
+    });
+  }
 
-    // Only connect if address is available
-    if (address) {
-      this.socket = io(environment.socketUrl, {
-        query: {
-          address: address,
-        },
-      });
-      console.log('Socket connected to:', environment.socketUrl);
-
-      // Listen for player join events
-      this.socket.on(
-        'quiz:player:joined',
-        (data: { playerAddress: string; players: string[] }) => {
-          // Update the signal with new players list
-          this.players.set(data.players);
-        }
-      );
-    } else {
-      console.warn(
-        'No wallet address available. Socket connection not established.'
-      );
+  private connectSocket(address: string): void {
+    // Disconnect existing socket if any
+    if (this.socket) {
+      this.disconnect();
     }
+
+    // Reconnect socket
+    this.socket = io(environment.socketUrl, {
+      query: { address },
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
+    });
+
+    // Setup socket event listeners
+    this.setupSocketListeners();
+  }
+
+  private setupSocketListeners(): void {
+    if (!this.socket) return;
+
+    // Listen for player list updates
+    this.socket.on('quiz:players', (playerList: string[]) => {
+      const uniquePlayers = Array.from(new Set(playerList));
+      this.players.set(uniquePlayers);
+    });
+
+    // Handle connection
+    this.socket.on('connect', () => {
+      console.log('Socket connected successfully');
+    });
+
+    // Handle disconnection
+    this.socket.on('disconnect', (reason) => {
+      console.warn('Socket disconnected:', reason);
+      
+      // Attempt to reconnect if the disconnection wasn't intentional
+      if (reason !== 'io client disconnect') {
+        const address = this.walletService.address();
+        if (address) {
+          this.connectSocket(address);
+        }
+      }
+    });
   }
 
   // Create a new quiz room
@@ -62,6 +93,14 @@ export class SocketService {
     }
     this.socket.on('quiz:started', callback);
   }
+  // Listen for quiz end event
+  onQuizEnd(callback: (data: { redirectUrl: string }) => void) {
+    if (!this.socket) {
+      console.warn('Socket not initialized. Skipping onQuizEnd.');
+      return;
+    }
+    this.socket.on('quiz:ended', callback);
+  }
   // Emit quiz start event
   startQuiz(pin: string) {
     if (!this.socket) {
@@ -70,8 +109,16 @@ export class SocketService {
     }
     this.socket.emit('quiz:start', { pin });
   }
+  endQuiz(quizAddress: string, pin: string) {
+    if (!this.socket) {
+      console.warn('Socket not initialized. Skipping endQuiz.');
+      return;
+    }
+    this.socket.emit('quiz:end', { quizAddress, pin });
+  }
   // Clean up socket connection
   disconnect() {
     this.socket?.disconnect();
+    this.socket = undefined;
   }
 }

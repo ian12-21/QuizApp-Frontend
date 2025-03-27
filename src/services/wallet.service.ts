@@ -189,7 +189,7 @@ export class WalletService {
     }
   }
 
-  async getUserAddress(): Promise<string> {
+  getUserAddress(): string {
     const address = this.address();
     if (!address) {
       throw new Error('No wallet address found. Please connect your wallet.');

@@ -1,0 +1,27 @@
+<div class="leaderboard-header">
+  <h1>Leaderboard</h1>
+  <span class="subtitle">Top Quiz Players</span>
+</div>
+
+<div class="leaderboard-container">
+  <div class="leaderboard-card">
+    <div class="leaderboard-content">
+      <h2>Player Rankings</h2>
+      
+      <div class="player-list">
+        <div class="player-header">
+          <div class="rank">Rank</div>
+          <div class="player-name">Player</div>
+          <div class="score">Score</div>
+        </div>
+        
+        <div *ngFor="let player of players; let i = index" class="player-item">
+          <div class="rank">{{ i + 1 }}</div>
+          <div class="player-name">{{ player }}</div>
+          <div class="score">23</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

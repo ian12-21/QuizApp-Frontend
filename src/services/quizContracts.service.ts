@@ -184,43 +184,53 @@ export class QuizService {
         }
     }
 
-    async startQuiz(quizAddress: string, creatorAddress: string, pin: string) {
+    async savePlayers(pin: string, playerAddresses: string[]) {
         try {
-            const quizData = await this.getQuizByPin(pin);
-            if (!quizData) {
-                throw new Error('Quiz not found');
-            }
-
-            const signer = await this.provider?.getSigner(creatorAddress);
-            if (!signer) {
-                throw new Error('Failed to get signer');
-            }
-            const quiz = new Contract(quizAddress, quizAbi, signer) as unknown as QuizContract;
-            
-            // Check quiz state
-            const isStarted = await quiz.isStarted();
-            if (isStarted) {
-                throw new Error('Quiz already started');
-            }
-            
-            const tx = await quiz.startQuiz(quizData.playerAddresses);
-            const receipt = await tx.wait();
-
-            if (!receipt) {
-                throw new Error('Transaction receipt not found');
-            }
-            
-            const event = receipt.logs
-                .map(log => quiz.interface.parseLog(log))
-                .find(parsedLog => parsedLog && parsedLog.name === 'QuizStarted');
-            const [startTime] = event?.args || [];
-
-            return { startTime: startTime.toString() };
+            await firstValueFrom(this.http.post(`${API_URL}/quiz/${pin}/add-players`, { playerAddresses }));
         } catch (error) {
-            console.error('Error starting quiz:', error);
-            throw error;
+            console.error('Error saving players:', error);
+            throw new Error('Failed to save players');
         }
     }
+
+
+    // async startQuiz(quizAddress: string, creatorAddress: string, pin: string) {
+    //     try {
+    //         const quizData = await this.getQuizByPin(pin);
+    //         if (!quizData) {
+    //             throw new Error('Quiz not found');
+    //         }
+
+    //         const signer = await this.provider?.getSigner(creatorAddress);
+    //         if (!signer) {
+    //             throw new Error('Failed to get signer');
+    //         }
+    //         const quiz = new Contract(quizAddress, quizAbi, signer) as unknown as QuizContract;
+            
+    //         // Check quiz state
+    //         const isStarted = await quiz.isStarted();
+    //         if (isStarted) {
+    //             throw new Error('Quiz already started');
+    //         }
+            
+    //         const tx = await quiz.startQuiz(quizData.playerAddresses);
+    //         const receipt = await tx.wait();
+
+    //         if (!receipt) {
+    //             throw new Error('Transaction receipt not found');
+    //         }
+            
+    //         const event = receipt.logs
+    //             .map(log => quiz.interface.parseLog(log))
+    //             .find(parsedLog => parsedLog && parsedLog.name === 'QuizStarted');
+    //         const [startTime] = event?.args || [];
+
+    //         return { startTime: startTime.toString() };
+    //     } catch (error) {
+    //         console.error('Error starting quiz:', error);
+    //         throw error;
+    //     }
+    // }
 
     // async endQuiz(
     //     quizAddress: string,

@@ -7,9 +7,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { WalletService } from '../../../services/wallet.service';
-
-// Import the service with its actual export name
 import { QuizService } from '../../../services/quizContracts.service';
+import { QuizDataService } from '../../../services/quiz-data.service';
+import { SocketService } from '../../../services/socket.service';
 
 interface Question {
   question: string;
@@ -58,6 +58,8 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
     private router: Router,
     private quizService: QuizService,
     public walletService: WalletService,
+    private quizDataService: QuizDataService,
+    private socketService: SocketService,
     private dialog: MatDialog
   ) {
     this.userAnswers.quizAddress = this.walletService.address() || '';
@@ -68,6 +70,10 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
       this.route.params.subscribe(params => {
         this.quizPin = params['pin'];
         this.initializeQuiz();
+      });
+
+      this.socketService.onQuizEnd((data) => {
+        this.router.navigate([data.redirectUrl]);
       });
     } catch (error) {
       console.error('Error in ngOnInit:', error);
@@ -164,6 +170,10 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
 
   async endQuiz() {
     if (!this.isCreator) return;
+
+    this.quizDataService.clearQuizData();
+
+    this.socketService.endQuiz(this.quizAddress, this.quizPin);
 
     try {
       //await this.quizService.endQuiz(this.quizAddress);
