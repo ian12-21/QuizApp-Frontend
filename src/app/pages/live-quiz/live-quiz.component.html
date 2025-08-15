@@ -40,6 +40,15 @@
       <button 
         *ngIf="isCreator && isFinished"
         mat-raised-button 
+        color="primary"
+        (click)="submitAllUsersAnswers()"
+        [disabled]="isCreator">
+        Submit All Answers
+      </button>
+
+      <button 
+        *ngIf="isCreator && isFinished && canEndQuiz"
+        mat-raised-button 
         color="accent"
         (click)="endQuiz()">
         End Quiz

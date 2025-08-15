@@ -17,9 +17,11 @@ interface Question {
   correctAnswer: number;
 }
 
-interface UserAnswers {
+export interface UserAnswer {
   quizAddress: string;
-  answers: number[];
+  userAddress: string | null;
+  questionIndex: number;
+  answer: number;
 }
 
 @Component({
@@ -45,13 +47,14 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
   currentQuestion: Question | null = null;
   currentQuestionIndex: number = 0;
   selectedAnswer: number | null = null;
-  userAnswers: UserAnswers = { quizAddress: '', answers: [] };
+  userAnswer: UserAnswer = { quizAddress: '', userAddress: '', questionIndex: 0, answer: -1 };
   isCreator: boolean = false;
   private questionTimer: any;
   private timerInterval: any;
   private readonly QUESTION_DURATION = 20000; // 20 seconds
   isFinished: boolean = false;  
   timerWidth: number = 100; // Start at 100%
+  canEndQuiz: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -61,9 +64,7 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
     private quizDataService: QuizDataService,
     private socketService: SocketService,
     private dialog: MatDialog
-  ) {
-    this.userAnswers.quizAddress = this.walletService.address() || '';
-  }
+  ) {}
 
   async ngOnInit() {
     try {
@@ -105,8 +106,8 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
         this.quizName = quizInfo.quizName;
         this.creatorAddress = quizInfo.creatorAddress;
         this.questions = quizInfo.questions;
-        this.userAnswers.quizAddress = this.quizAddress;
-        this.userAnswers.answers = new Array(this.questions.length).fill(-1);
+        this.userAnswer.quizAddress = this.quizAddress;
+        this.userAnswer.userAddress = this.walletService.address();
         
         // Check if current user is the creator
         this.isCreator = this.walletService.address() === quizInfo.creatorAddress;
@@ -162,9 +163,20 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
     }, this.QUESTION_DURATION);
   }
 
-  submitAnswer() {
+  async submitAnswer() {
+    //save to backend every time submit is pressed
     if (this.selectedAnswer !== null) {
-      this.userAnswers.answers[this.currentQuestionIndex] = this.selectedAnswer;
+      this.userAnswer.answer = this.selectedAnswer;
+      this.userAnswer.questionIndex = this.currentQuestionIndex;
+    }
+    await this.quizService.submitAnswer(this.userAnswer);
+  }
+
+  //function for submiting all users every answer to backend & contract
+  async submitAllUsersAnswers() {
+    const response = await this.quizService.submitAllUsersAnswers(this.quizAddress);
+    if (response){
+      this.canEndQuiz = true
     }
   }
 
@@ -176,7 +188,7 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
     this.socketService.endQuiz(this.quizAddress, this.quizPin);
 
     try {
-      //await this.quizService.endQuiz(this.quizAddress);
+      await this.quizService.endQuiz(this.quizAddress, this.creatorAddress, this.quizPin);
       this.router.navigate(['/']);
     } catch (error) {
       console.error('Error ending quiz:', error);

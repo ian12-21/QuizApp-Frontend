@@ -113,6 +113,7 @@ export class QuizQueueComponent implements OnInit {
         throw new Error('Missing required quiz information');
       }
 
+      await this.quizService.startQuiz(this.quizAddress(), this.creatorAddress(), this.quizPin());
       this.socketService.startQuiz(this.quizPin());
     } catch (error) {
       console.error('Error starting quiz:', error);
