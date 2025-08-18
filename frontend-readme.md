@@ -1,16 +1,24 @@
-# QuizApp-Frontend: Architecture & Workflow Overview
+# QuizApp-Frontend: Project Overview, Architecture & Workflow
 
-This document explains the core structure, workflow, and main features of the **QuizApp-Frontend**, which is the Angular-based decentralized application (dApp) for interacting with the QuizApp smart contracts and backend.
+## About the Project
+
+**QuizApp-Frontend** is a decentralized application (dApp) built using Angular, designed to provide an interactive, secure, and transparent platform for creating and playing quizzes on the blockchain. It serves as the user interface for the QuizApp ecosystem, enabling users to create, join, and participate in blockchain-powered quizzes with seamless wallet integration and real-time smart contract interaction.
+
+**Key Objectives:**
+- Offer a fair and decentralized quiz experience powered by Ethereum smart contracts.
+- Provide a user-friendly interface for both quiz creators (hosts) and participants.
+- Ensure transparency, security, and data integrity by anchoring quiz results and scores on-chain.
+- Integrate with MetaMask and other Ethereum-compatible wallets for authentication and signing.
 
 ---
 
 ## Core Features
 
-- **Quiz Creation**: Users can create new quizzes which are registered on-chain and in the backend.
-- **Joining Quizzes**: Players can join quizzes using a PIN.
-- **Answer Submission**: Participants submit answers, which are sent to the backend and ultimately included on-chain.
-- **Smart Contract Interaction**: Directly interacts with Ethereum smart contracts to create quizzes, start/finish games, and retrieve results.
-- **Wallet Integration**: Connects to MetaMask (or compatible wallets) for authentication and signing.
+- **Quiz Creation:** Users can create new quizzes, which are registered on-chain and in the backend.
+- **Joining Quizzes:** Players can join quizzes using a PIN.
+- **Answer Submission:** Participants submit answers, which are sent to the backend and ultimately included on-chain.
+- **Smart Contract Interaction:** Directly interacts with Ethereum smart contracts to create quizzes, start/finish games, and retrieve results.
+- **Wallet Integration:** Connects to MetaMask (or compatible wallets) for authentication and signing.
 
 ---
 
