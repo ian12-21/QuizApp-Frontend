@@ -37,29 +37,29 @@ graph TD
 ### 2. Quiz Creation & Registration
 
 ```mermaid
-graph TD
-    U[User] -- create quiz --> QF[QuizService.createQuiz()]
-    QF -- call smart contract --> SC[QuizFactory Contract]
-    SC -- emit event --> QF
-    QF -- save quiz info --> API[Backend /api/quiz/create]
+flowchart TD
+  U[User] -- "create quiz" --> QF["QuizService: createQuiz"]
+  QF -- "call smart contract" --> SC["QuizFactory Contract"]
+  SC -- "emit event" --> QF
+  QF -- "save quiz info" --> API["Backend /api/quiz/create"]
 ```
 
 ### 3. Answer Submission
 
 ```mermaid
-graph TD
-    P[Player] -- submits answer --> QS[QuizService.submitAnswer()]
-    QS -- call backend --> API[/api/quiz/:quizAddress/submit-answers]
-    API -- store answer --> DB[Backend DB]
+flowchart TD
+  P[Player] -- "submits answer" --> QS["QuizService: submitAnswer"]
+  QS -- "call backend" --> API["/api/quiz/:quizAddress/submit-answers"]
+  API -- "store answer" --> DB["Backend DB"]
 ```
 
 ### 4. Submitting All Answers to Chain
 
 ```mermaid
-graph TD
-    Admin/Host -- trigger --> QS[QuizService.submitAllUsersAnswers()]
-    QS -- call backend --> API[/api/quiz/:quizAddress/submit-all-answers]
-    API -- on-chain submit --> SC[QuizContract.submitAllAnswers()]
+flowchart TD
+  AdminHost["Admin/Host"] -- "trigger" --> QS["QuizService: submitAllUsersAnswers"]
+  QS -- "call backend" --> API["/api/quiz/:quizAddress/submit-all-answers"]
+  API -- "on-chain submit" --> SC["QuizContract: submitAllAnswers"]
 ```
 
 ---
