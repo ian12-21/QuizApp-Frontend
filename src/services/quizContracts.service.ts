@@ -325,4 +325,89 @@ export class QuizService {
         }
     }
 
+  /*
+  async submitAllUsersAnswersWithFrontendSigning(quizAddress: string): Promise<{
+    success: boolean;
+    transactionHash?: string;
+    winner?: { userAddress: string, score: number };
+  }> {
+      try {
+          // Get prepared transaction data from backend
+          const response = await firstValueFrom(
+              this.http.get<{
+                  success: boolean;
+                  transactionData?: {
+                      to: string;
+                      data: string;
+                      players: string[];
+                      answersArray: string[];
+                      scoresArray: number[];
+                      winner: { userAddress: string, score: number };
+                  };
+                  error?: string;
+              }>(`${API_URL}/quiz/${quizAddress}/prepare-submit-answers`)
+          );
+  
+          if (!response.success || !response.transactionData) {
+              throw new Error(response.error || 'Failed to prepare transaction data');
+          }
+  
+          // Get signer for transaction signing
+          if (!this.signer) {
+              await this.initializeAsync();
+          }
+  
+          if (!this.signer) {
+              throw new Error('Failed to get signer');
+          }
+  
+          // Prepare transaction object
+          const transactionRequest = {
+              to: response.transactionData.to,
+              data: response.transactionData.data,
+              // Optional: Add gas estimation
+              // gasLimit: ethers.parseUnits('500000', 'wei')
+          };
+  
+          console.log('Signing transaction with data:', {
+              to: response.transactionData.to,
+              players: response.transactionData.players,
+              answersArray: response.transactionData.answersArray,
+              scoresArray: response.transactionData.scoresArray
+          });
+  
+          // Sign and send the transaction
+          const tx = await this.signer.sendTransaction(transactionRequest);
+          console.log('Transaction sent:', tx.hash);
+  
+          // Wait for confirmation
+          const receipt = await tx.wait();
+          console.log('Transaction confirmed:', receipt?.hash);
+  
+          return {
+              success: true,
+              transactionHash: tx.hash,
+              winner: response.transactionData.winner
+          };
+  
+      } catch (error) {
+          console.error('Error submitting answers with frontend signing:', error);
+          throw error;
+      }
+  }
+  
+  // Keep the old method for backward compatibility (modify to use the new endpoint)
+  async submitAllUsersAnswers(quizAddress: string): Promise<{ success: boolean }> {
+      try {
+          const response = await firstValueFrom(
+              this.http.post<{ success: boolean }>(`${API_URL}/quiz/${quizAddress}/submit-all-answers`, {})
+          );
+          return response;
+      } catch (error) {
+          console.error('Error submitting answers:', error);
+          throw error;
+      }
+  }
+  */
+
 }
