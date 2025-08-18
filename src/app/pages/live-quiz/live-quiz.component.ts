@@ -99,7 +99,7 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
     try {
       // Fetch quiz data here
       const quizInfo = await this.quizService.getQuizByPin(this.quizPin);
-      console.log(quizInfo);
+      // console.log(quizInfo);
       
       if (quizInfo) {
         this.quizAddress = quizInfo.quizAddress;
@@ -108,9 +108,11 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
         this.questions = quizInfo.questions;
         this.userAnswer.quizAddress = this.quizAddress;
         this.userAnswer.userAddress = this.walletService.address();
+        console.log("USER ANSWER 1: ", this.userAnswer);
         
         // Check if current user is the creator
         this.isCreator = this.walletService.address() === quizInfo.creatorAddress;
+        console.log("IS CREATOR: ",this.isCreator);
         
         if (this.questions.length > 0) {
           this.currentQuestion = this.questions[0];
@@ -161,6 +163,8 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
         }
       }
     }, this.QUESTION_DURATION);
+
+    console.log("IS FINISHED: ", this.isFinished);
   }
 
   async submitAnswer() {
@@ -169,6 +173,7 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
       this.userAnswer.answer = this.selectedAnswer;
       this.userAnswer.questionIndex = this.currentQuestionIndex;
     }
+    console.log("USER ANSWER 2: ", this.userAnswer);
     await this.quizService.submitAnswer(this.userAnswer);
   }
 

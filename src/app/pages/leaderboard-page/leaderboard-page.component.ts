@@ -1,11 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SocketService } from '../../../services/socket.service';
-
-// interface Player {
-//   name: string;
-//   score: number;
-// }
+import { QuizService } from '../../../services/quizContracts.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-leaderboard-page',
@@ -16,36 +13,18 @@ import { SocketService } from '../../../services/socket.service';
 })
 export class LeaderboardPageComponent implements OnInit {
   players: any[] = [];
+  winner: any;
 
-  constructor(private socketService: SocketService) {}
+  constructor(private socketService: SocketService,
+              private quizService: QuizService,
+              private route: ActivatedRoute
+  ) {}
 
-  ngOnInit(): void {
-    // For demonstration purposes, populate with sample data
-    // In a real app, this would come from a service
-    // this.players = [
-    //   { name: 'Player 1', score: 950 },
-    //   { name: 'Player 2', score: 820 },
-    //   { name: 'Player 3', score: 780 },
-    //   { name: 'Player 4', score: 650 },
-    //   { name: 'Player 5', score: 520 },
-    // ];
+  async ngOnInit(): Promise<void> {
+    // grab the quiz address from url
+    const quizAddress = this.route.snapshot.params['quizAddress'];
+    this.winner = await this.quizService.getWinnerForQuiz(quizAddress);
 
     this.players = this.socketService.players();
-
-  // Add some random players if the array is empty
-  if (this.players.length === 0) {
-    const names = ['Alex', 'Jordan', 'Taylor', 'Morgan', 'Casey', 'Riley', 'Quinn', 'Sam', 'Jamie', 'Avery'];
-    for (let i = 0; i < 8; i++) {
-      this.players.push({
-        name: names[Math.floor(Math.random() * names.length)],
-        score: Math.floor(Math.random() * 1000)
-      });
-    }
-  }
-
-
-    console.log(this.players);
-
-    this.players.sort((a, b) => b.score - a.score);
   }
 }

@@ -152,12 +152,12 @@ export class CreateQuestionsComponent implements OnInit {
       }
 
       //return quiz address and pin
-      // const result = await this.quizService.createQuiz(
-      //   this.ownerAddress,
-      //   this.quizName,
-      //   this.questions
-      // );
-      const result: { quizAddress: string, pin: string } = { quizAddress: '0x92d0De7d596eAA1255b9a3634C3cB2901997Ca6E', pin: '598205' };
+      const result = await this.quizService.createQuiz(
+        this.ownerAddress,
+        this.quizName,
+        this.questions
+      );
+      // const result: { quizAddress: string, pin: string } = { quizAddress: '0x92d0De7d596eAA1255b9a3634C3cB2901997Ca6E', pin: '598205' };
       this.socketService.createQuizRoom(result.pin, this.ownerAddress);
       // Store quiz info in the service for access in quiz-queue
       this.quizDataService.setActiveQuiz({  

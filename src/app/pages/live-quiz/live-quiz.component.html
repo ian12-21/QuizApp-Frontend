@@ -42,7 +42,7 @@
         mat-raised-button 
         color="primary"
         (click)="submitAllUsersAnswers()"
-        [disabled]="isCreator">
+        [disabled]="!isCreator">
         Submit All Answers
       </button>
 

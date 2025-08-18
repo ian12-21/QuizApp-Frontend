@@ -106,6 +106,7 @@
     border-radius: 25px;
     font-weight: 500;
     transition: all 0.3s ease;
+    color: white !important;
 
     &[color="primary"] {
       background: linear-gradient(45deg, #d43bd4, #3071ab);

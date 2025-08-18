@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { UserAnswer } from '../app/pages/live-quiz/live-quiz.component';
 
-const factoryAddress = '0x337bfd9159cddd562fc26f0fd515ddea69783dcc';
+const factoryAddress = '0x1038daa959710abc93d91846e28a58e08be46fc0';
 const API_URL = 'http://localhost:3000/api';
 
 // Quiz Factory ABI (only the functions we need)
@@ -82,7 +82,12 @@ export class QuizService {
 
     private async initializeAsync() {
         try {
-            this.signer = await this.provider?.getSigner();
+            // Use listAccounts() first, then getSigner(address) to avoid ENS resolution on Polygon Amoy
+            const accounts = await this.provider?.listAccounts();
+            if (!accounts || accounts.length === 0) {
+                throw new Error('No accounts found');
+            }
+            this.signer = await this.provider?.getSigner(accounts[0].address);
             if (!this.signer) {
                 throw new Error('Failed to get signer');
             }
@@ -127,6 +132,31 @@ export class QuizService {
               throw new Error('Factory contract not initialized');
           }
 
+          // Ensure we have a fresh signer to avoid any cached ENS issues
+          if (!this.signer) {
+              await this.initializeAsync();
+              if (!this.signer) {
+                  throw new Error('Failed to initialize signer');
+              }
+          }
+
+          // Get a fresh signer specifically for this transaction to avoid ENS issues
+          const accounts = await this.provider?.listAccounts();
+          if (!accounts || accounts.length === 0) {
+              throw new Error('No accounts found');
+          }
+          const freshSigner = await this.provider?.getSigner(ethers.getAddress(creatorAddress));
+          if (!freshSigner) {
+              throw new Error('Failed to get fresh signer for creator address');
+          }
+
+          // Create a fresh factory contract instance with the creator's signer
+          const freshFactory = new Contract(
+              factoryAddress,
+              factoryAbi,
+              freshSigner
+          ) as unknown as QuizFactoryContract;
+
           // Create answers string and hash
           const answersString = questions
               .map(q => q.correctAnswer.toString())
@@ -138,6 +168,13 @@ export class QuizService {
               ethers.toUtf8Bytes(answersString)
           );
           
+          console.log('Creating quiz with params:', {
+              questionCount: questions.length,
+              answersHash,
+              creatorAddress
+          });
+
+          // Add explicit gas limit to avoid gas estimation issues
           const tx = await this.factory.createBasicQuiz(
               questions.length,
               answersHash
@@ -171,7 +208,7 @@ export class QuizService {
               questions,
           }));
 
-          console.log('quizPins:', this.quizPins);
+        //   console.log('quizPins:', this.quizPins);
 
           return {
               quizAddress,
@@ -219,7 +256,7 @@ export class QuizService {
                 throw new Error('Quiz not found');
             }
 
-            const signer = await this.provider?.getSigner(creatorAddress);
+            const signer = await this.provider?.getSigner(ethers.getAddress(creatorAddress));
             if (!signer) {
                 throw new Error('Failed to get signer');
             }
@@ -253,7 +290,7 @@ export class QuizService {
     //submits every player answer to backend
     async submitAnswer(userAnswer: UserAnswer) {
         try{
-            await firstValueFrom(this.http.post(`${API_URL}/quiz/${userAnswer.quizAddress}/submit-answers`, userAnswer));
+            await firstValueFrom(this.http.post(`${API_URL}/quiz/${userAnswer.quizAddress}/submit-answers`, { userAnswer }));
         }catch(error){
             console.error("Error saving answers", error);
             throw error;
@@ -282,7 +319,7 @@ export class QuizService {
                 throw new Error('Quiz not found');
             }
 
-            const signer = await this.provider?.getSigner(creatorAddress);
+            const signer = await this.provider?.getSigner(ethers.getAddress(creatorAddress));
             if (!signer) {
                 throw new Error('Failed to get signer');
             }
@@ -325,6 +362,20 @@ export class QuizService {
         }
     }
 
+    //this function calls quiz contracts getQuizResults()
+    async getWinnerForQuiz(quizAddress: string) {
+        try {
+            const quiz = new Contract(quizAddress, quizAbi, this.signer) as unknown as QuizContract;
+            const winnerData = await quiz.getQuizResults();
+            return { 
+                winnerAddress: winnerData.winnerAddress, 
+                winnerScore: winnerData.winnerScore,
+            };
+        } catch (error) {
+            console.error('Error getting winner:', error);
+            throw error;
+        }
+    }
   /*
   async submitAllUsersAnswersWithFrontendSigning(quizAddress: string): Promise<{
     success: boolean;
