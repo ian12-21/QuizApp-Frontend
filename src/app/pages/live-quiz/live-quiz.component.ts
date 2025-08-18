@@ -194,4 +194,45 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
       console.error('Error ending quiz:', error);
     }
   }
+
+  /*
+  // Replace the submitAllUsersAnswers method in live-quiz.component.ts
+
+  //function for submitting all users' answers to backend & contract with frontend signing
+  async submitAllUsersAnswers() {
+      try {
+          console.log('Preparing to submit all answers with frontend signing...');
+          
+          // Use the new method that signs on frontend
+          const response = await this.quizService.submitAllUsersAnswersWithFrontendSigning(this.quizAddress);
+          
+          if (response.success) {
+              console.log('All answers submitted successfully!');
+              console.log('Transaction hash:', response.transactionHash);
+              console.log('Winner:', response.winner);
+              
+              this.canEndQuiz = true;
+          } else {
+              throw new Error('Failed to submit answers');
+          }
+      } catch (error) {
+          console.error('Error submitting all answers:', error);
+          // You might want to show an error message to the user here
+          alert('Failed to submit answers. Please try again.');
+      }
+  }
+  
+  // Optional: Add a method to use the old backend-only approach
+  async submitAllUsersAnswersBackendOnly() {
+      try {
+          const response = await this.quizService.submitAllUsersAnswers(this.quizAddress);
+          if (response.success) {
+              this.canEndQuiz = true;
+          }
+      } catch (error) {
+          console.error('Error submitting answers (backend-only):', error);
+          alert('Failed to submit answers. Please try again.');
+      }
+  }
+  */
 }
