@@ -134,7 +134,7 @@ flowchart LR
 ## SEKVENCIJSKI DIJAGRAMI 
 
 Kreiranje kviza (frontend + factory + backend)
-```
+```mermaid
 sequenceDiagram
     autonumber
     actor U as User (Host)
@@ -160,7 +160,7 @@ sequenceDiagram
 
 Priključivanje i slanje odgovora (off-chain prikupljanje)
 
-```
+```mermaid
 sequenceDiagram
     autonumber
     actor P as Player
