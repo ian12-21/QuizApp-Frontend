@@ -130,3 +130,52 @@ flowchart LR
 ---
 
 *For more technical details, see the [README.md](./README.md) in the repository.*
+
+## SEKVENCIJSKI DIJAGRAMI 
+
+Kreiranje kviza (frontend + factory + backend)
+```
+sequenceDiagram
+    autonumber
+    actor U as User (Host)
+    participant UI as Angular UI
+    participant WAL as Wallet (MetaMask)
+    participant ETH as Ethereum Provider
+    participant FAC as QuizFactory (SC)
+    participant API as Backend API
+    participant DB as MongoDB
+
+    U->>UI: Create Quiz (inputs: name, questions, correctAnswers)
+    UI->>UI: compute answersHash = keccak256(correctAnswers)
+    UI->>WAL: Request connect & signature
+    WAL-->>UI: signer available
+    UI->>FAC: createBasicQuiz(questionCount, answersHash)
+    FAC-->>UI: QuizCreated(address)
+    UI->>API: POST /api/quiz/create (quiz meta + questions + answersHash + quizAddress)
+    API->>DB: store quiz doc (Quiz, UserAnswers init)
+    DB-->>API: ok
+    API-->>UI: created (pin, quizAddress)
+    UI-->>U: show PIN and quizAddress
+```
+
+Priključivanje i slanje odgovora (off-chain prikupljanje)
+
+```
+sequenceDiagram
+    autonumber
+    actor P as Player
+    participant UI as Angular UI
+    participant API as Backend API
+    participant DB as MongoDB
+
+    P->>UI: Join quiz (enter PIN)
+    UI->>API: GET /api/quiz/:pin
+    API->>DB: find quiz by PIN
+    DB-->>API: quiz meta (quizAddress, questions)
+    API-->>UI: quiz details
+    P->>UI: Submit answer (per question)
+    UI->>API: POST /api/quiz/:quizAddress/submit-answers (addr, qIndex, answer)
+    API->>DB: upsert UserAnswers
+    DB-->>API: ok
+    API-->>UI: accepted
+```
