@@ -206,32 +206,3 @@ sequenceDiagram
     QUIZ-->>UI: event QuizFinished(winner, score)
     UI-->>H: show final ranking + link to tx
 ```
-
-
-## SEKVENCIJSKI DIJAGRAMI — PlantUML
-
-Kreiranje kviza
-
-```
-sequenceDiagram
-    autonumber
-    actor U as User (Host)
-    participant UI as Angular UI
-    participant WAL as Wallet (MetaMask)
-    participant FAC as QuizFactory (SC)
-    participant API as Backend API
-    participant DB as MongoDB
-
-    U->>UI: Create Quiz (name, questions, correctAnswers)
-    UI->>UI: answersHash = keccak256(correctAnswers)
-    UI->>WAL: Request connect + signer
-    WAL-->>UI: signer
-    UI->>FAC: createBasicQuiz(questionCount, answersHash)
-    FAC-->>UI: QuizCreated(address)
-    UI->>API: POST /api/quiz/create (meta + questions + answersHash + quizAddress)
-    API->>DB: store Quiz + init UserAnswers
-    DB-->>API: ok
-    API-->>UI: created (pin, quizAddress)
-    UI-->>U: Show PIN
-
-```
