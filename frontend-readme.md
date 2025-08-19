@@ -211,7 +211,7 @@ sequenceDiagram
 ## SEKVENCIJSKI DIJAGRAMI — PlantUML
 
 Kreiranje kviza
-```mermaid
+
 @startuml
 autonumber
 actor "User (Host)" as U
@@ -233,4 +233,4 @@ DB --> API : ok
 API --> UI : created (pin, quizAddress)
 UI --> U : Show PIN
 @enduml
-```
+
