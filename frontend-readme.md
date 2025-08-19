@@ -179,3 +179,30 @@ sequenceDiagram
     DB-->>API: ok
     API-->>UI: accepted
 ```
+Batch sidrenje on-chain i završetak kviza
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor H as Host
+    participant UI as Angular UI
+    participant API as Backend API
+    participant SVC as QuizService (backend)
+    participant DB as MongoDB
+    participant QUIZ as Quiz (SC)
+
+    H->>UI: Finish quiz
+    UI->>API: POST /api/quiz/:quizAddress/submit-all-answers
+    API->>SVC: build batch (players, packedAnswers/scores)
+    SVC->>DB: get all UserAnswers
+    DB-->>SVC: answers/scores
+    SVC->>QUIZ: submitAllAnswers(players, packedAnswers, scores)
+    QUIZ-->>SVC: event (AnswersSubmitted)
+    SVC-->>API: ok (tx hash)
+    API-->>UI: submitted on-chain
+
+    H->>UI: EndQuiz (reveal correctAnswers + winner)
+    UI->>QUIZ: endQuiz(correctAnswers, winner, score) via wallet
+    QUIZ-->>UI: event QuizFinished(winner, score)
+    UI-->>H: show final ranking + link to tx
+```
