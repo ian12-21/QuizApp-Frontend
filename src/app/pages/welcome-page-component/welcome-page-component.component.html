@@ -16,8 +16,13 @@
         <ng-container *ngIf="walletService.isConnected()">
           <p>Connected: {{ walletService.shortAddress() }}</p>
           <div class="button-section">
-            <button class="create-button" (click)="openCreateQuizDialog()">Create a Quiz</button>
-            <button class="join-button" (click)="joinQuizDialog()">Join a Quiz</button>
+            <div class="button-container">
+              <button class="create-button" (click)="openCreateQuizDialog()">Create a Quiz</button>
+              <button class="join-button" (click)="joinQuizDialog()">Join a Quiz</button>
+            </div>
+            <div class="button-container">
+              <button class="search-button" routerLink="/search-results">Search Quiz & Results</button>
+            </div>
           </div>
         </ng-container>
       </div>

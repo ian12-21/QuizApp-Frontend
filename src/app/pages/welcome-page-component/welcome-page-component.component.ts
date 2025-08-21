@@ -4,13 +4,13 @@ import { WalletService } from '../../../services/wallet.service';
 import { CommonModule } from '@angular/common';
 import { CreateQuizPopUpComponent } from '../../components/create-quiz-pop-up/create-quiz-pop-up.component';
 import { JoinQuizPopUpComponent } from '../../components/join-quiz-pop-up/join-quiz-pop-up.component';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { QuizDataService } from '../../../services/quiz-data.service';
 
 @Component({
     selector: 'app-welcome-page-component',
     standalone: true,
-    imports: [CommonModule, MatDialogModule],
+    imports: [CommonModule, MatDialogModule, RouterModule],
     templateUrl: './welcome-page-component.component.html',
     styleUrls: ['./welcome-page-component.component.scss']
 })

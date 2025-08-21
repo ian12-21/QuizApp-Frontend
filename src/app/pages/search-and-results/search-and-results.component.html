@@ -1,0 +1,159 @@
+<div class="search-container">
+  <div class="search-header">
+    <h1>Quiz Search & Results</h1>
+    <p class="subtitle">Search for quizzes and view transparent results from the blockchain</p>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-section">
+    <div class="search-container-wrapper">
+      <input class="search-input"
+             [class.dropdown-active]="showDropdown"
+             [(ngModel)]="searchQuery" 
+             (input)="onSearchInput()"
+             (keydown)="onEnterKey($event)"
+             placeholder="Enter quiz name or contract address">
+      
+      <!-- Search Results Dropdown -->
+      <div *ngIf="showDropdown" class="search-dropdown">
+        <div *ngIf="isSearching" class="dropdown-loading">
+          <mat-spinner diameter="20"></mat-spinner>
+          <span>Searching...</span>
+        </div>
+        
+        <div *ngIf="!isSearching && searchResults.length === 0" class="dropdown-no-results">
+          No quizzes found
+        </div>
+        
+        <div *ngFor="let quiz of searchResults" 
+             class="dropdown-item"
+             (click)="selectQuiz(quiz)">
+          <div class="quiz-name">{{ quiz.quizName }}</div>
+          <div class="quiz-address">{{ quiz.quizAddress }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quiz Results -->
+  <div *ngIf="selectedQuiz" class="results-container">
+    
+    <!-- Quiz Info Card -->
+    <mat-card class="quiz-info-card">
+      <mat-card-header>
+        <mat-card-title>{{ selectedQuiz.quizName }}</mat-card-title>
+        <mat-card-subtitle>Contract: {{ selectedQuiz.quizAddress }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="quiz-details" *ngIf="quizInfo">
+          <div class="detail-item">
+            <strong>Creator:</strong> {{ shortenAddress(quizInfo.creator) }}
+          </div>
+          <div class="detail-item">
+            <strong>Questions:</strong> {{ quizInfo.questionCount }}
+          </div>
+          <div class="detail-item">
+            <strong>Status:</strong> 
+            <span [class]="quizInfo.isFinished ? 'status-finished' : (quizInfo.isStarted ? 'status-active' : 'status-pending')">
+              {{ quizInfo.isFinished ? 'Finished' : (quizInfo.isStarted ? 'Active' : 'Pending') }}
+            </span>
+          </div>
+          <div class="detail-item">
+            <strong>Total Players:</strong> {{ quizInfo.playerAddresses.length }}
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Winner Section -->
+    <mat-card class="winner-card" *ngIf="winner && winner.winnerAddress">
+      <mat-card-header>
+        <mat-card-title>🏆 Winner</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="winner-info" *ngIf="!loadingWinner">
+          <div class="winner-address">{{ shortenAddress(winner.winnerAddress) }}</div>
+          <div class="winner-score">Score: {{ winner.winnerScore }}</div>
+        </div>
+        <div *ngIf="loadingWinner" class="loading-section">
+          <mat-spinner diameter="30"></mat-spinner>
+          <span>Loading winner...</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Players Section -->
+    <mat-card class="players-card">
+      <mat-card-header>
+        <mat-card-title>Players</mat-card-title>
+        <mat-card-subtitle>All participants from the blockchain</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="players-actions">
+          <button mat-raised-button 
+                  color="accent" 
+                  (click)="loadAllPlayers()" 
+                  [disabled]="loadingPlayers">
+            <mat-spinner *ngIf="loadingPlayers" diameter="20"></mat-spinner>
+            <span *ngIf="!loadingPlayers">Get All Players</span>
+          </button>
+        </div>
+
+        <!-- Players List -->
+        <div *ngIf="players.length > 0" class="players-list">
+          <div *ngFor="let player of players; let i = index" class="player-item">
+            <div class="player-header">
+              <div class="player-rank">#{{ i + 1 }}</div>
+              <div class="player-address">{{ shortenAddress(player) }}</div>
+              <button mat-button 
+                      color="primary" 
+                      (click)="loadPlayerResults(player)"
+                      [disabled]="loadingPlayerResults.has(player)">
+                <mat-spinner *ngIf="loadingPlayerResults.has(player)" diameter="16"></mat-spinner>
+                <span *ngIf="!loadingPlayerResults.has(player)">Get Results</span>
+              </button>
+            </div>
+
+            <!-- Player Results -->
+            <div *ngIf="playerResults.has(player)" class="player-results">
+              <div class="player-score">
+                <strong>Score: {{ playerResults.get(player)?.score }}</strong>
+              </div>
+              
+              <!-- Answers Comparison -->
+              <div class="answers-section">
+                <h4>Answer Comparison:</h4>
+                <div class="answers-comparison">
+                  <div *ngFor="let answer of getPlayerAnswers(player); let j = index" 
+                       class="question-row compact">
+                    <span class="question-index"
+                          [class.correct-index]="getCorrectAnswerForIndex(j) && isAnswerCorrect(answer, getCorrectAnswerForIndex(j))"
+                          [class.incorrect-index]="getCorrectAnswerForIndex(j) && !isAnswerCorrect(answer, getCorrectAnswerForIndex(j))">
+                      Q{{ j + 1 }}:
+                    </span>
+                    <div class="answers-inline">
+                      <span class="player-answer" 
+                           [class.correct]="getCorrectAnswerForIndex(j) && isAnswerCorrect(answer, getCorrectAnswerForIndex(j))"
+                           [class.incorrect]="getCorrectAnswerForIndex(j) && !isAnswerCorrect(answer, getCorrectAnswerForIndex(j))">
+                        {{ answer }}
+                      </span>
+                      <span>/</span>
+                      <span class="correct-answer" *ngIf="getCorrectAnswerForIndex(j)">
+                        {{ getCorrectAnswerForIndex(j) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- No Results Message -->
+  <div *ngIf="!selectedQuiz && !isSearching" class="no-results">
+    <p>Enter a quiz name or contract address to search for quiz results</p>
+  </div>
+</div>

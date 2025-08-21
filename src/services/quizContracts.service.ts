@@ -20,11 +20,11 @@ const factoryAbi = [
 export const quizAbi = [
     // Core functions
     'function startQuiz(address[] _playerAddresses) external',
-    'function submitAllAnswers(address[] players, uint128[] answers, uint128[] scores) external',
+    'function submitAllAnswers(address[] players, string[] answers, uint128[] scores) external',
     'function endQuiz(string correctAnswers, address _winner, uint256 _score) external',
     // Read-only view calls
     'function getQuizResults() external view returns (address winnerAddress, uint256 winnerScore, uint256 totalPlayers, uint256 quizEndTime)',
-    'function getPlayerResults(address player) external view returns (uint128 answers, uint128 score)',
+    'function getPlayerResults(address player) external view returns (string answers, uint128 score)',
     'function getAllPlayers() external view returns (address[] memory)',
     'function getQuizInfo() external view returns (address creatorAddress, uint256 questions, bool started, bool finished, bytes32 quizAnswersHash, address[] memory players)',
     'function getIsStarted() external view returns (bool)',
@@ -33,7 +33,8 @@ export const quizAbi = [
     'event QuizStarted(uint256 startTime, uint256 playerCount)',
     'event QuizFinished(address winner, uint256 score)',
     'event PlayerAnswersSubmitted(address indexed player, uint256 score)'
-  ];
+];
+  
   
 interface QuizFactoryContract extends ethers.BaseContract {
   createBasicQuiz(questionCount: number, answerHash: string): Promise<ContractTransactionResponse>;
@@ -42,10 +43,10 @@ interface QuizFactoryContract extends ethers.BaseContract {
 
 interface QuizContract extends ethers.BaseContract {
   startQuiz(playerAddresses: string[]): Promise<ContractTransactionResponse>;
-  submitAllAnswers(players: string[], answers: number[], scores: number[]): Promise<ContractTransactionResponse>;
+  submitAllAnswers(players: string[], answers: string[], scores: number[]): Promise<ContractTransactionResponse>;
   endQuiz(correctAnswers: string, winner: string, score: number): Promise<ContractTransactionResponse>;
   getQuizResults(): Promise<{ winnerAddress: string, winnerScore: number, totalPlayers: number, quizEndTime: number }>;
-  getPlayerResults(player: string): Promise<{ answers: number, score: number }>;
+  getPlayerResults(player: string): Promise<{ answers: string, score: number }>;
   getAllPlayers(): Promise<string[]>;
   getQuizInfo(): Promise<{ creatorAddress: string, questions: number, started: boolean, finished: boolean, quizAnswersHash: string, players: string[] }>;
   getIsStarted(): Promise<boolean>;
@@ -461,6 +462,52 @@ export class QuizService {
         } catch (error) {
             console.error('Error fetching top players:', error);
             return [];
+        }
+    }
+
+    // Get quiz basic info from contract
+    async getQuizInfo(quizAddress: string) {
+        try {
+            const quiz = new Contract(quizAddress, quizAbi, this.signer) as unknown as QuizContract;
+            const quizInfo = await quiz.getQuizInfo();
+            return {
+                creator: quizInfo.creatorAddress,
+                questionCount: Number(quizInfo.questions),
+                isStarted: quizInfo.started,
+                isFinished: quizInfo.finished,
+                answersHash: quizInfo.quizAnswersHash,
+                playerAddresses: quizInfo.players
+            };
+        } catch (error) {
+            console.error('Error getting quiz info:', error);
+            throw error;
+        }
+    }
+
+    // Get all players from contract
+    async getAllPlayers(quizAddress: string): Promise<string[]> {
+        try {
+            const quiz = new Contract(quizAddress, quizAbi, this.signer) as unknown as QuizContract;
+            const players = await quiz.getAllPlayers();
+            return players;
+        } catch (error) {
+            console.error('Error getting all players:', error);
+            throw error;
+        }
+    }
+
+    // Get player's answers and score from contract
+    async getPlayerResults(quizAddress: string, playerAddress: string): Promise<{ answers: string, score: number }> {
+        try {
+            const quiz = new Contract(quizAddress, quizAbi, this.signer) as unknown as QuizContract;
+            const playerData = await quiz.getPlayerResults(playerAddress);
+            return {
+                answers: playerData.answers.toString(),
+                score: Number(playerData.score)
+            };
+        } catch (error) {
+            console.error('Error getting player results:', error);
+            throw error;
         }
     }
 
