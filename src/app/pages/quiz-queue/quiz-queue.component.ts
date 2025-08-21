@@ -105,18 +105,17 @@ export class QuizQueueComponent implements OnInit {
 
   async startQuiz() {
     if (!this.isBrowser) return;
-
-    await this.quizService.savePlayers(this.quizPin(), this.players());
     
     try {
       if (!this.quizPin() || !this.quizAddress() || !this.creatorAddress()) {
         throw new Error('Missing required quiz information');
       }
 
-      await this.quizService.startQuiz(this.quizAddress(), this.creatorAddress(), this.quizPin()).then((startTime) => {
+      await this.quizService.startQuiz(this.quizAddress(), this.creatorAddress(), this.quizPin(), this.players()).then(async (startTime) => {
         if(startTime){
+          await this.quizService.savePlayers(this.quizPin(), this.players());
           this.socketService.startQuiz(this.quizPin());
-          console.log('Quiz started at:', startTime);
+          console.log('Quiz started at and players:', startTime, this.players());
         }
       });
     } catch (error) {

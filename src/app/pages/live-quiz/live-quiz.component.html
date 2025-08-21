@@ -33,7 +33,7 @@
         mat-raised-button 
         color="primary"
         (click)="submitAnswer()"
-        [disabled]="selectedAnswer === null || isCreator">
+        [disabled]="selectedAnswer === null || isCreator || isFinished">
         Submit Answer
       </button>
 
@@ -42,7 +42,7 @@
         mat-raised-button 
         color="primary"
         (click)="submitAllUsersAnswers()"
-        [disabled]="!isCreator">
+        [disabled]="!isCreator || canEndQuiz">
         Submit All Answers
       </button>
 

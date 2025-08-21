@@ -6,6 +6,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { WalletService } from '../../../services/wallet.service';
 import { QuizService } from '../../../services/quizContracts.service';
 import { QuizDataService } from '../../../services/quiz-data.service';
@@ -33,7 +34,8 @@ export interface UserAnswer {
     MatCardModule,
     MatButtonModule,
     MatRadioModule,
-    MatDialogModule
+    MatDialogModule,
+    MatSnackBarModule
   ],
   templateUrl: './live-quiz.component.html',
   styleUrls: ['./live-quiz.component.scss']
@@ -63,7 +65,8 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
     public walletService: WalletService,
     private quizDataService: QuizDataService,
     private socketService: SocketService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {}
 
   async ngOnInit() {
@@ -108,11 +111,9 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
         this.questions = quizInfo.questions;
         this.userAnswer.quizAddress = this.quizAddress;
         this.userAnswer.userAddress = this.walletService.address();
-        console.log("USER ANSWER 1: ", this.userAnswer);
         
         // Check if current user is the creator
         this.isCreator = this.walletService.address() === quizInfo.creatorAddress;
-        console.log("IS CREATOR: ",this.isCreator);
         
         if (this.questions.length > 0) {
           this.currentQuestion = this.questions[0];
@@ -158,13 +159,9 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
         this.startTimers();
       } else {
         // Last question finished
-        if (this.isCreator) {
-          this.isFinished = true;
-        }
+        this.isFinished = true;
       }
     }, this.QUESTION_DURATION);
-
-    console.log("IS FINISHED: ", this.isFinished);
   }
 
   async submitAnswer() {
@@ -173,48 +170,62 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
       this.userAnswer.answer = this.selectedAnswer;
       this.userAnswer.questionIndex = this.currentQuestionIndex;
     }
-    console.log("USER ANSWER 2: ", this.userAnswer);
-    await this.quizService.submitAnswer(this.userAnswer);
+    //console.log("USER ANSWER 2: ", this.userAnswer);
+    try {
+      await this.quizService.submitAnswer(this.userAnswer);
+      // Show success snackbar
+      this.snackBar.open('Answer submitted successfully!', 'Close', {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom',
+        panelClass: ['success-snackbar']
+      });
+    } catch (error) {
+      console.error('Error submitting answer:', error);
+      // Show error snackbar
+      this.snackBar.open('Failed to submit answer. Please try again.', 'Close', {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom',
+        panelClass: ['error-snackbar']
+      });
+    }
   }
 
   //function for submiting all users every answer to backend & contract
-  async submitAllUsersAnswers() {
-    const response = await this.quizService.submitAllUsersAnswers(this.quizAddress);
-    if (response){
-      this.canEndQuiz = true
-    }
-  }
+  //OLD VERSION FOR SIGNING ON THE BACKEND
+  // async submitAllUsersAnswers() {
+  //   const response = await this.quizService.submitAllUsersAnswers(this.quizAddress);
+  //   if (response){
+  //     this.canEndQuiz = true
+  //   }
+  // }
 
   async endQuiz() {
     if (!this.isCreator) return;
 
     this.quizDataService.clearQuizData();
 
-    this.socketService.endQuiz(this.quizAddress, this.quizPin);
-
     try {
       await this.quizService.endQuiz(this.quizAddress, this.creatorAddress, this.quizPin);
-      this.router.navigate(['/']);
+      this.socketService.endQuiz(this.quizAddress, this.quizPin);
     } catch (error) {
       console.error('Error ending quiz:', error);
     }
   }
 
-  /*
-  // Replace the submitAllUsersAnswers method in live-quiz.component.ts
-
   //function for submitting all users' answers to backend & contract with frontend signing
   async submitAllUsersAnswers() {
       try {
-          console.log('Preparing to submit all answers with frontend signing...');
+          // console.log('Preparing to submit all answers with frontend signing...');
           
           // Use the new method that signs on frontend
           const response = await this.quizService.submitAllUsersAnswersWithFrontendSigning(this.quizAddress);
           
           if (response.success) {
-              console.log('All answers submitted successfully!');
-              console.log('Transaction hash:', response.transactionHash);
-              console.log('Winner:', response.winner);
+              // console.log('All answers submitted successfully!');
+              // console.log('Transaction hash:', response.transactionHash);
+              // console.log('Winner:', response.winner);
               
               this.canEndQuiz = true;
           } else {
@@ -227,17 +238,4 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
       }
   }
   
-  // Optional: Add a method to use the old backend-only approach
-  async submitAllUsersAnswersBackendOnly() {
-      try {
-          const response = await this.quizService.submitAllUsersAnswers(this.quizAddress);
-          if (response.success) {
-              this.canEndQuiz = true;
-          }
-      } catch (error) {
-          console.error('Error submitting answers (backend-only):', error);
-          alert('Failed to submit answers. Please try again.');
-      }
-  }
-  */
 }

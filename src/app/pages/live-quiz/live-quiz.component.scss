@@ -131,6 +131,13 @@
   }
 }
 
+::ng-deep {
+  .mat-internal-form-field>label {
+    color: white !important;
+  }
+}
+
+
 /* Responsive styles */
 @media (max-width: 768px) {
   .quiz-card {

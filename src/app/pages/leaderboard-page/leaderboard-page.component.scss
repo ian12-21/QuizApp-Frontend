@@ -6,9 +6,17 @@
 }
 
 .leaderboard-header {
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
   color: white;
+  padding: 0 20px;
+
+  .header-content {
+    text-align: center;
+    flex: 1;
+  }
 
   h1 {
     margin-bottom: 5px;
@@ -18,6 +26,23 @@
   .subtitle {
     font-size: 1.2rem;
     color: #d43bd4;
+  }
+}
+
+.exit-btn {
+  background-color: #262C3A;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
   }
 }
 
@@ -72,7 +97,7 @@
 
 .player-header, .player-item {
   display: grid;
-  grid-template-columns: 0.5fr 2fr 1fr;
+  grid-template-columns: 0.5fr 2.5fr 0.5fr;
   padding: 12px;
   border-radius: 8px;
   align-items: center;
@@ -91,6 +116,59 @@
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
     transform: translateY(-2px);
+  }
+  
+  &.winner-row {
+    background: linear-gradient(135deg, rgba(212, 59, 212, 0.2), rgba(48, 113, 171, 0.2), rgba(0, 232, 181, 0.2));
+    border: 2px solid #00e8b5;
+    box-shadow: 0 4px 12px rgba(0, 232, 181, 0.3);
+    font-weight: bold;
+    position: relative;
+    
+    &::before {
+      content: "👑";
+      position: absolute;
+      left: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+    }
+    
+    .rank {
+      color: #00e8b5;
+      font-size: 1.1rem;
+    }
+    
+    .player-name {
+      color: #00e8b5;
+    }
+    
+    .score {
+      color: #00e8b5;
+      font-size: 1.1rem;
+    }
+    
+    &:hover {
+      background: linear-gradient(135deg, rgba(212, 59, 212, 0.3), rgba(48, 113, 171, 0.3), rgba(0, 232, 181, 0.3));
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(0, 232, 181, 0.4);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .leaderboard-header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 0 10px;
+    
+    .header-content {
+      order: 1;
+    }
+    
+    .exit-btn {
+      order: 2;
+    }
   }
 }
 

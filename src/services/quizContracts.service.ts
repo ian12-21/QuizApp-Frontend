@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { UserAnswer } from '../app/pages/live-quiz/live-quiz.component';
 
-const factoryAddress = '0x1038daa959710abc93d91846e28a58e08be46fc0';
+const factoryAddress = '0x67a46e10ee8504be3d698d1835ef924c87a91d98';
 const API_URL = 'http://localhost:3000/api';
 
 // Quiz Factory ABI (only the functions we need)
@@ -168,11 +168,11 @@ export class QuizService {
               ethers.toUtf8Bytes(answersString)
           );
           
-          console.log('Creating quiz with params:', {
-              questionCount: questions.length,
-              answersHash,
-              creatorAddress
-          });
+          // console.log('Creating quiz with params:', {
+          //     questionCount: questions.length,
+          //     answersHash,
+          //     creatorAddress
+          // });
 
           // Add explicit gas limit to avoid gas estimation issues
           const tx = await this.factory.createBasicQuiz(
@@ -249,7 +249,7 @@ export class QuizService {
         }
     }
 
-    async startQuiz(quizAddress: string, creatorAddress: string, pin: string) {
+    async startQuiz(quizAddress: string, creatorAddress: string, pin: string, playerAddresses: string[]) {
         try {
             const quizData = await this.getQuizByPin(pin);
             if (!quizData) {
@@ -267,8 +267,13 @@ export class QuizService {
             if (isStarted) {
                 throw new Error('Quiz already started');
             }
-            
-            const tx = await quiz.startQuiz(quizData.playerAddresses);
+
+            //remove creator address from player addresses
+            playerAddresses = playerAddresses.filter(address => address !== creatorAddress);
+            // console.log('Starting quiz with player addresses 1:', playerAddresses);
+            playerAddresses.push(...quizData.playerAddresses);
+            // console.log('Starting quiz with player addresses 2:', playerAddresses);
+            const tx = await quiz.startQuiz(playerAddresses);
             const receipt = await tx.wait();
 
             if (!receipt) {
@@ -298,15 +303,16 @@ export class QuizService {
     }
 
     //function that calls the backend function to submit all answers to smart contracts
-    async submitAllUsersAnswers(quizAddress: string): Promise<{ success: boolean }> {
-        try {
-            const response = await firstValueFrom(this.http.get<{ success: boolean }>(`${API_URL}/quiz/${quizAddress}/submit-all-answers`));
-            return response;
-        } catch (error) {
-            console.error('Error submitting answers:', error);
-            throw error;
-        }
-    }
+    //OLD VERSION
+    // async submitAllUsersAnswers(quizAddress: string): Promise<{ success: boolean }> {
+    //     try {
+    //         const response = await firstValueFrom(this.http.get<{ success: boolean }>(`${API_URL}/quiz/${quizAddress}/submit-all-answers`));
+    //         return response;
+    //     } catch (error) {
+    //         console.error('Error submitting answers:', error);
+    //         throw error;
+    //     }
+    // }
 
     async endQuiz(
         quizAddress: string,
@@ -328,7 +334,7 @@ export class QuizService {
             // Check quiz state
             const isStarted = await quiz.getIsStarted();
             const isFinished = await quiz.getIsFinished();
-            if (isStarted && !isFinished) {
+            if (!isStarted && isFinished) {
                 throw new Error('Quiz not active');
             }
 
@@ -376,89 +382,86 @@ export class QuizService {
             throw error;
         }
     }
-  /*
-  async submitAllUsersAnswersWithFrontendSigning(quizAddress: string): Promise<{
-    success: boolean;
-    transactionHash?: string;
-    winner?: { userAddress: string, score: number };
-  }> {
-      try {
-          // Get prepared transaction data from backend
-          const response = await firstValueFrom(
-              this.http.get<{
-                  success: boolean;
-                  transactionData?: {
-                      to: string;
-                      data: string;
-                      players: string[];
-                      answersArray: string[];
-                      scoresArray: number[];
-                      winner: { userAddress: string, score: number };
-                  };
-                  error?: string;
-              }>(`${API_URL}/quiz/${quizAddress}/prepare-submit-answers`)
-          );
   
-          if (!response.success || !response.transactionData) {
-              throw new Error(response.error || 'Failed to prepare transaction data');
-          }
-  
-          // Get signer for transaction signing
-          if (!this.signer) {
-              await this.initializeAsync();
-          }
-  
-          if (!this.signer) {
-              throw new Error('Failed to get signer');
-          }
-  
-          // Prepare transaction object
-          const transactionRequest = {
-              to: response.transactionData.to,
-              data: response.transactionData.data,
-              // Optional: Add gas estimation
-              // gasLimit: ethers.parseUnits('500000', 'wei')
-          };
-  
-          console.log('Signing transaction with data:', {
-              to: response.transactionData.to,
-              players: response.transactionData.players,
-              answersArray: response.transactionData.answersArray,
-              scoresArray: response.transactionData.scoresArray
-          });
-  
-          // Sign and send the transaction
-          const tx = await this.signer.sendTransaction(transactionRequest);
-          console.log('Transaction sent:', tx.hash);
-  
-          // Wait for confirmation
-          const receipt = await tx.wait();
-          console.log('Transaction confirmed:', receipt?.hash);
-  
-          return {
-              success: true,
-              transactionHash: tx.hash,
-              winner: response.transactionData.winner
-          };
-  
-      } catch (error) {
-          console.error('Error submitting answers with frontend signing:', error);
-          throw error;
-      }
-  }
-  
-  // Keep the old method for backward compatibility (modify to use the new endpoint)
-  async submitAllUsersAnswers(quizAddress: string): Promise<{ success: boolean }> {
-      try {
-          const response = await firstValueFrom(
-              this.http.post<{ success: boolean }>(`${API_URL}/quiz/${quizAddress}/submit-all-answers`, {})
-          );
-          return response;
-      } catch (error) {
-          console.error('Error submitting answers:', error);
-          throw error;
-      }
-  }
-  */
+
+    async submitAllUsersAnswersWithFrontendSigning(quizAddress: string): Promise<{
+        success: boolean;
+        transactionHash?: string;
+        winner?: { userAddress: string, score: number };
+    }> {
+        try {
+            // Get prepared transaction data from backend
+            const response = await firstValueFrom(
+                this.http.get<{
+                    success: boolean;
+                    transactionData?: {
+                        to: string;
+                        data: string;
+                        players: string[];
+                        answersArray: string[];
+                        scoresArray: number[];
+                        winner: { userAddress: string, score: number };
+                    };
+                    error?: string;
+                }>(`${API_URL}/quiz/${quizAddress}/prepare-submit-answers`)
+            );
+    
+            if (!response.success || !response.transactionData) {
+                throw new Error(response.error || 'Failed to prepare transaction data');
+            }
+    
+            // Get signer for transaction signing
+            if (!this.signer) {
+                await this.initializeAsync();
+            }
+    
+            if (!this.signer) {
+                throw new Error('Failed to get signer');
+            }
+    
+            // Prepare transaction object
+            const transactionRequest = {
+                to: response.transactionData.to,
+                data: response.transactionData.data,
+                // Optional: Add gas estimation
+                // gasLimit: ethers.parseUnits('500000', 'wei')
+            };
+    
+            console.log('Signing transaction with data:', {
+                to: response.transactionData.to,
+                players: response.transactionData.players,
+                answersArray: response.transactionData.answersArray,
+                scoresArray: response.transactionData.scoresArray
+            });
+    
+            // Sign and send the transaction
+            const tx = await this.signer.sendTransaction(transactionRequest);
+            // console.log('Transaction sent:', tx.hash);
+    
+            // Wait for confirmation
+            const receipt = await tx.wait();
+            // console.log('Transaction confirmed:', receipt?.hash);
+    
+            return {
+                success: true,
+                transactionHash: tx.hash,
+                winner: response.transactionData.winner
+            };
+    
+        } catch (error) {
+            console.error('Error submitting answers with frontend signing:', error);
+            throw error;
+        }
+    }
+
+    async getTopPlayers(quizAddress: string): Promise<{ userAddress: string, score: number }[]> {
+        try {
+            const response = await firstValueFrom(this.http.get<{ userAddress: string, score: number }[]>(`${API_URL}/quiz/${quizAddress}/top3players`));
+            return response;
+        } catch (error) {
+            console.error('Error fetching top players:', error);
+            return [];
+        }
+    }
 
 }
