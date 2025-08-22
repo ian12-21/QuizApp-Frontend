@@ -7,9 +7,11 @@
         <ng-container *ngIf="!walletService.isConnected()">
           <p>Connect wallet to continue</p>
           <div class="button-section">
-            <button class="connect-button" (click)="connectWallet()">
-              <span>{{ walletService.isConnecting() ? 'Connecting...' : 'Connect Wallet' }}</span>
-            </button>
+            <div class="button-container">
+                <button class="connect-button" (click)="connectWallet()">
+                  <span>{{ walletService.isConnecting() ? 'Connecting...' : 'Connect Wallet' }}</span>
+                </button>
+            </div>
           </div>
         </ng-container>
 

@@ -96,7 +96,7 @@ export class SearchAndResultsComponent {
       return;
     }
 
-    // Debounce search to avoid too many API calls
+    // Debounce search to avoid too many API callsselectedQuiz 
     this.searchTimeout = setTimeout(() => {
       this.performSearch();
     }, 300);
@@ -130,8 +130,25 @@ export class SearchAndResultsComponent {
     this.searchQuery = '';
     this.hideDropdown();
     
+    // Reset all previous quiz data
+    this.resetQuizData();
+    
     // Load the selected quiz
     this.loadSelectedQuiz();
+  }
+
+  resetQuizData() {
+    // Clear all previous quiz data
+    this.quizInfo = null;
+    this.winner = null;
+    this.players = [];
+    this.playerResults.clear();
+    this.correctAnswers = [];
+    
+    // Reset loading states
+    this.loadingWinner = false;
+    this.loadingPlayers = false;
+    this.loadingPlayerResults.clear();
   }
 
   async loadSelectedQuiz() {
@@ -203,9 +220,6 @@ export class SearchAndResultsComponent {
     this.loadingPlayerResults.add(playerAddress);
     try {
       const result = await this.quizService.getPlayerResults(this.selectedQuiz.quizAddress, playerAddress);
-      console.log('Player results from contract:', result);
-      console.log('Player answers:', result.answers);
-      console.log('Player score:', result.score);
       this.playerResults.set(playerAddress, result);
     } catch (error) {
       console.error('Error loading player results:', error);
@@ -219,23 +233,15 @@ export class SearchAndResultsComponent {
     if (!this.selectedQuiz) return;
 
     try {
-      console.log('Loading correct answers...');
-      console.log('Selected quiz:', this.selectedQuiz);
-      console.log('AnswersString:', this.selectedQuiz.answersString);
-      
       // Parse correct answers from the quiz's answersString
       if (this.selectedQuiz.answersString) {
         // Parse the answersString - it should be a JSON array or comma-separated string
         try {
           this.correctAnswers = JSON.parse(this.selectedQuiz.answersString);
-          console.log('Parsed correct answers (JSON):', this.correctAnswers);
         } catch {
           // If JSON parse fails, try splitting by comma
           this.correctAnswers = this.selectedQuiz.answersString.split(',').map(answer => answer.trim());
-          console.log('Parsed correct answers (split):', this.correctAnswers);
         }
-      } else {
-        console.log('No answersString found in selected quiz');
       }
     } catch (error) {
       console.error('Error loading correct answers:', error);
@@ -246,7 +252,6 @@ export class SearchAndResultsComponent {
     const result = this.playerResults.get(playerAddress);
 
     if (!result?.answers) {
-      console.log('No answers found for player');
       return [];
     }
     
@@ -301,6 +306,14 @@ export class SearchAndResultsComponent {
   shortenAddress(address: string): string {
     if (!address) return '';
     return `${address.slice(0, 10)}...${address.slice(-4)}`;
+  }
+
+  getPolygonScanUrl(address: string): string {
+    return `https://amoy.polygonscan.com/address/${address}`;
+  }
+
+  openInNewTab(url: string): void {
+    window.open(url, '_blank');
   }
 
   showError(message: string) {

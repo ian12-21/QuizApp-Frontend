@@ -51,12 +51,20 @@
     <mat-card class="quiz-info-card">
       <mat-card-header>
         <mat-card-title>{{ selectedQuiz.quizName }}</mat-card-title>
-        <mat-card-subtitle>Contract: {{ selectedQuiz.quizAddress }}</mat-card-subtitle>
+        <mat-card-subtitle>Contract: 
+          <a href="{{ getPolygonScanUrl(selectedQuiz.quizAddress) }}" target="_blank" class="address">{{ selectedQuiz.quizAddress }}</a>
+        </mat-card-subtitle>
       </mat-card-header>
       <mat-card-content>
         <div class="quiz-details" *ngIf="quizInfo">
           <div class="detail-item">
             <strong>Creator:</strong> {{ shortenAddress(quizInfo.creator) }}
+            <button mat-icon-button 
+                    (click)="openInNewTab(getPolygonScanUrl(quizInfo.creator))"
+                    matTooltip="View on Polygon Amoy Scan"
+                    class="address-button">
+              <mat-icon>open_in_new</mat-icon>
+            </button>
           </div>
           <div class="detail-item">
             <strong>Questions:</strong> {{ quizInfo.questionCount }}
@@ -81,7 +89,15 @@
       </mat-card-header>
       <mat-card-content>
         <div class="winner-info" *ngIf="!loadingWinner">
-          <div class="winner-address">{{ shortenAddress(winner.winnerAddress) }}</div>
+          <div class="winner-address">
+            {{ shortenAddress(winner.winnerAddress) }}
+            <button mat-icon-button 
+                    (click)="openInNewTab(getPolygonScanUrl(winner.winnerAddress))"
+                    matTooltip="View on Polygon Amoy Scan"
+                    class="address-button">
+              <mat-icon>open_in_new</mat-icon>
+            </button>
+          </div>
           <div class="winner-score">Score: {{ winner.winnerScore }}</div>
         </div>
         <div *ngIf="loadingWinner" class="loading-section">
@@ -113,7 +129,15 @@
           <div *ngFor="let player of players; let i = index" class="player-item">
             <div class="player-header">
               <div class="player-rank">#{{ i + 1 }}</div>
-              <div class="player-address">{{ shortenAddress(player) }}</div>
+              <div class="player-address">
+                {{ shortenAddress(player) }}
+                <button mat-icon-button 
+                        (click)="openInNewTab(getPolygonScanUrl(player))"
+                        matTooltip="View on Polygon Amoy Scan"
+                        class="address-button">
+                  <mat-icon>open_in_new</mat-icon>
+                </button>
+              </div>
               <button mat-button 
                       color="primary" 
                       (click)="loadPlayerResults(player)"
