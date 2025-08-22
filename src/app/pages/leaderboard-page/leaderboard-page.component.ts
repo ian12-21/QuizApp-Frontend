@@ -4,12 +4,14 @@ import { SocketService } from '../../../services/socket.service';
 import { QuizService } from '../../../services/quizContracts.service';
 import { ActivatedRoute } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
 import { WalletService } from '../../../services/wallet.service';
 
 @Component({
   selector: 'app-leaderboard-page',
-  imports: [CommonModule, MatCardModule, RouterModule],
+  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, RouterModule],
   templateUrl: './leaderboard-page.component.html',
   styleUrls: ['./leaderboard-page.component.scss'],
   standalone: true
