@@ -11,6 +11,7 @@
                 <button class="connect-button" (click)="connectWallet()">
                   <span>{{ walletService.isConnecting() ? 'Connecting...' : 'Connect Wallet' }}</span>
                 </button>
+                <button class="about-button" routerLink="/about">About QuizApp</button>
             </div>
           </div>
         </ng-container>
@@ -24,6 +25,7 @@
             </div>
             <div class="button-container">
               <button class="search-button" routerLink="/search-results">Search Quiz & Results</button>
+              <button class="about-button" routerLink="/about">About QuizApp</button>
             </div>
           </div>
         </ng-container>

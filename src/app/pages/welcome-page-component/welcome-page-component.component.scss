@@ -56,17 +56,18 @@
 
     .button-container{
         display: flex;
-        justify-content: space-evenly;
+        justify-content: center;
+        gap: 15px;
         width: 100%;
         height: 40px;
     }
 
-    .create-button, .join-button, .connect-button, .search-button{
+    .create-button, .join-button, .connect-button, .search-button, .about-button{
         width: 35%;       
         border-radius: 8px;
         font-size: 16px;
         padding: 0;
-        background: linear-gradient(to right, #d43bd4, #3071ab, #00e8b5);
+        background: linear-gradient(45deg, #6b46c1, #3b82f6, #10b981);
         color: white;
         font-weight: 600;
         border: none;
@@ -75,6 +76,7 @@
         &:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            filter: brightness(1.1);
         }
     }
 }

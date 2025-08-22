@@ -1,0 +1,126 @@
+<div class="about-container">
+  <div class="about-content">
+    <div class="header-section">
+      <button class="back-button" routerLink="/">
+        <span>← Back to Home</span>
+      </button>
+      <h1>About QuizApp</h1>
+    </div>
+    
+    <p class="intro">
+      QuizApp is a decentralized quiz application (dApp) that combines an Angular frontend, 
+      a Node/TypeScript backend, and Ethereum smart contracts. The app lets hosts create quizzes, 
+      players join with a PIN, submit answers off-chain, and anchor results on-chain 
+      for transparency and auditability.
+    </p>
+
+    <div class="section">
+      <h2>What makes QuizApp different</h2>
+      <ul>
+        <li><strong>Decentralized final result anchoring:</strong> Critical results and the final winner are recorded on-chain for transparency.</li>
+        <li><strong>Off-chain convenience:</strong> Answers are collected off-chain during play to reduce on-chain cost and user friction; the host can batch-submit results to chain.</li>
+        <li><strong>Wallet-based ownership:</strong> All blockchain actions are signed by wallets (MetaMask) so users keep custody of their keys.</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>How it works</h2>
+      <div class="flow-steps">
+        <div class="step">
+          <h3>1. Create a quiz (host)</h3>
+          <p>Host composes quiz questions and correct answers in the frontend. Frontend computes an answers hash (keccak256) and calls the Factory contract to create a new Quiz instance on-chain. After creation, quiz metadata is posted to the backend which returns a PIN for joining.</p>
+        </div>
+        
+        <div class="step">
+          <h3>2. Join a quiz (player)</h3>
+          <p>Players enter the PIN in the frontend to fetch quiz details from the backend. Players connect their wallet (MetaMask) through the WalletService.</p>
+        </div>
+        
+        <div class="step">
+          <h3>3. Submit answers (during play)</h3>
+          <p>Players submit answers per question off-chain via the backend API. Answers are stored in the backend database for efficiency and reduced gas costs.</p>
+        </div>
+        
+        <div class="step">
+          <h3>4. Batch submit on-chain (host/admin)</h3>
+          <p>After the quiz finishes, the host triggers batch submission. The backend aggregates player answers and scores into arrays and either submits directly or returns a prepared transaction for the host to sign.</p>
+        </div>
+        
+        <div class="step">
+          <h3>5. End quiz & reveal winner</h3>
+          <p>The host calls the Quiz contract's endQuiz function using their wallet. The contract emits QuizFinished events and the frontend shows final ranking with transaction links.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>For hosts / creators</h2>
+      <ol>
+        <li>Create a quiz in the frontend: provide questions and correct answers.</li>
+        <li>Connect your wallet and deploy a quiz through the Factory contract (done automatically by frontend).</li>
+        <li>Share the generated PIN with players to join.</li>
+        <li>After play time, trigger "Submit all answers" — this aggregates answers and either submits on-chain or returns a prepared transaction for you to sign.</li>
+        <li>End quiz by calling endQuiz (reveal correct answers) and display final ranking.</li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <h2>Smart contract summary</h2>
+      <p>Main contracts that the frontend interacts with via Ethers.js:</p>
+      <ul>
+        <li><strong>QuizFactory:</strong> Creates new quiz instances with <code>createBasicQuiz()</code></li>
+        <li><strong>Quiz:</strong> Manages individual quiz lifecycle - starting, answer submission, ending, and winner determination</li>
+        <li><strong>QuizWithFee:</strong> Extended version supporting entry fees and prize distribution</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>Security & Privacy</h2>
+      <ul>
+        <li><strong>Wallet control:</strong> You sign on-chain transactions with your wallet; never share private keys.</li>
+        <li><strong>Off-chain answers:</strong> Answers are stored in the backend during play to save gas; the final authoritative result is anchored on-chain for public verification.</li>
+        <li><strong>Sensitive keys:</strong> Backend never stores plaintext private keys in code or repos.</li>
+        <li><strong>Network & fees:</strong> On-chain operations require gas; if using testnets (like Polygon Amoy), make sure you have test ETH/MATIC.</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>Troubleshooting</h2>
+      <ul>
+        <li><strong>Can't connect wallet:</strong> Ensure MetaMask is installed, unlocked, and on the correct network.</li>
+        <li><strong>PIN not found:</strong> Verify the host created the quiz successfully and the backend is running.</li>
+        <li><strong>Transaction failing:</strong> Check gas limits, RPC provider, and contract address matches deployed contract.</li>
+        <li><strong>Submit errors:</strong> Check backend logs for aggregation errors and database connectivity.</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>Glossary</h2>
+      <dl class="glossary">
+        <dt>dApp</dt>
+        <dd>Decentralized Application that interacts with blockchain networks.</dd>
+        
+        <dt>keccak256</dt>
+        <dd>Cryptographic hash function used to commit correct answers.</dd>
+        
+        <dt>PIN</dt>
+        <dd>Short code generated by backend to let players join a quiz.</dd>
+        
+        <dt>Batch submission</dt>
+        <dd>Sending many players' answers/scores to the blockchain in a single transaction to reduce gas.</dd>
+        
+        <dt>Factory contract</dt>
+        <dd>Smart contract that creates new quiz instances on-chain.</dd>
+        
+        <dt>MetaMask</dt>
+        <dd>Browser wallet extension used for signing blockchain transactions.</dd>
+      </dl>
+    </div>
+
+    <div class="footer-section">
+      <p class="thank-you">
+        Thank you for using QuizApp — a transparent, wallet-powered way to host & play quizzes!
+      </p>
+    </div>
+  </div>
+</div>

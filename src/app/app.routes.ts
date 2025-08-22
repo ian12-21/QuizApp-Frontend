@@ -6,9 +6,11 @@ import { LiveQuizComponent } from './pages/live-quiz/live-quiz.component';
 import { QuizCreationGuard } from '../services/auth-guard.service';
 import { LeaderboardPageComponent } from './pages/leaderboard-page/leaderboard-page.component';
 import { SearchAndResultsComponent } from './pages/search-and-results/search-and-results.component';
+import { AboutPageComponent } from './pages/about-page/about-page.component';
 
 export const routes: Routes = [
   { path: '', component: WelcomePageComponent },
+  { path: 'about', component: AboutPageComponent },
   { path: 'quiz-creation/:address', component: CreateQuestionsComponent, canActivate: [QuizCreationGuard] },
   { path: 'quiz-queue/:quiz-address/:pin', component: QuizQueueComponent },
   { path: 'active-quiz/:pin', component: LiveQuizComponent },
