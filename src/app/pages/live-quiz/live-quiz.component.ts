@@ -23,6 +23,7 @@ export interface UserAnswer {
   userAddress: string | null;
   questionIndex: number;
   answer: number;
+  answerTimeMs: number; // Time taken to answer in milliseconds
 }
 
 @Component({
@@ -49,7 +50,7 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
   currentQuestion: Question | null = null;
   currentQuestionIndex: number = 0;
   selectedAnswer: number | null = null;
-  userAnswer: UserAnswer = { quizAddress: '', userAddress: '', questionIndex: 0, answer: -1 };
+  userAnswer: UserAnswer = { quizAddress: '', userAddress: '', questionIndex: 0, answer: -1, answerTimeMs: 0 };
   isCreator: boolean = false;
   private questionTimer: any;
   private timerInterval: any;
@@ -57,6 +58,7 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
   isFinished: boolean = false;  
   timerWidth: number = 100; // Start at 100%
   canEndQuiz: boolean = false;
+  private questionStartTime: number = 0; // Track when question started
 
   constructor(
     private route: ActivatedRoute,
@@ -133,6 +135,9 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
     // Reset timer width to 100%
     this.timerWidth = 100;
     
+    // Record the start time for answer timing
+    this.questionStartTime = Date.now();
+    
     // Clear any existing timers
     this.clearTimers();
     
@@ -149,6 +154,11 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
     this.questionTimer = setTimeout(() => {
       // Clear the timer interval
       clearInterval(this.timerInterval);
+      
+      // If user hasn't submitted an answer, submit with max time
+      if (!this.isCreator && this.selectedAnswer === null) {
+        this.submitAnswerWithMaxTime();
+      }
       
       if (this.currentQuestionIndex < this.questions.length - 1) {
         this.currentQuestionIndex++;
@@ -167,8 +177,12 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
   async submitAnswer() {
     //save to backend every time submit is pressed
     if (this.selectedAnswer !== null) {
+      // Calculate answer time in milliseconds
+      const answerTime = Date.now() - this.questionStartTime;
+      
       this.userAnswer.answer = this.selectedAnswer;
       this.userAnswer.questionIndex = this.currentQuestionIndex;
+      this.userAnswer.answerTimeMs = answerTime;
     }
     //console.log("USER ANSWER 2: ", this.userAnswer);
     try {
@@ -189,6 +203,19 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
         verticalPosition: 'bottom',
         panelClass: ['error-snackbar']
       });
+    }
+  }
+
+  // Helper method to submit answer with max time when user doesn't answer
+  private async submitAnswerWithMaxTime() {
+    this.userAnswer.answer = -1; // No answer selected
+    this.userAnswer.questionIndex = this.currentQuestionIndex;
+    this.userAnswer.answerTimeMs = this.QUESTION_DURATION; // Max time
+    
+    try {
+      await this.quizService.submitAnswer(this.userAnswer);
+    } catch (error) {
+      console.error('Error submitting max time answer:', error);
     }
   }
 
