@@ -41,6 +41,7 @@ sequenceDiagram
 
     Host->>Frontend: Compose quiz, set questions/answers
     Frontend->>FactorySC: createBasicQuiz(questionCount, answersHash)
+    FactorySC->>QuizSC: create Quiz instance
     FactorySC-->>Frontend: Returns quizAddress
     Frontend->>Backend: POST /api/quiz/create {quiz metadata, quizAddress}
     Backend-->>Frontend: Returns PIN
@@ -73,8 +74,8 @@ sequenceDiagram
     Player->>Frontend: Select answer to question
     Frontend->>Backend: POST /api/quiz/:quizAddress/submit-answers {userAnswer}
     Backend->>DB: Store/update answer in UserAnswers
-    Backend-->>Frontend: Ack/next question
-    Frontend->>Player: Show next question or summary
+    Backend-->>Frontend: Return success
+    Frontend->>Player: confirm success
 ```
 
 ### 4. Submitting All Answers (Host/Admin)
