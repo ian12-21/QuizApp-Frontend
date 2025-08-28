@@ -30,7 +30,7 @@ export class CreateQuizPopUpComponent {
   ) {
     this.quizForm = this.fb.group({
       quizName: ['', [Validators.required, this.notOnlyNumbersValidator]],
-      numberOfQuestions: ['', [Validators.required, Validators.min(1), Validators.max(20), this.onlyNumbersValidator]]
+      numberOfQuestions: ['', [Validators.required, Validators.min(1), Validators.max(50), this.onlyNumbersValidator]]
     });
   }
 

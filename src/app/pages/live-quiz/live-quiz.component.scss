@@ -3,6 +3,7 @@
   justify-content: center;
   align-items: center;
   padding: 20px;
+  position: relative;
 }
 
 .quiz-header {
@@ -131,9 +132,94 @@
   }
 }
 
+// Loading overlay styles
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 48px 40px;
+  background: linear-gradient(135deg, rgba(38, 44, 58, 0.95), rgba(38, 44, 58, 0.9));
+  border-radius: 20px;
+  box-shadow: 
+    0 20px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  max-width: 90vw;
+  text-align: center;
+  transform: scale(1);
+  animation: slideIn 0.4s ease-out;
+}
+
+.loading-text {
+  color: white;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+  text-align: center;
+  background: linear-gradient(45deg, #d43bd4, #3071ab, #00e8b5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+// Button spinner styles
+.button-spinner {
+  margin-right: 8px;
+  display: inline-block;
+}
+
 ::ng-deep {
   .mat-internal-form-field>label {
     color: white !important;
+  }
+  
+  // Custom spinner colors
+  .loading-overlay .mat-spinner circle {
+    stroke: #d43bd4;
+  }
+  
+  .button-spinner .mat-spinner circle {
+    stroke: currentColor;
   }
 }
 

@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { WalletService } from '../../../services/wallet.service';
 import { QuizService } from '../../../services/quizContracts.service';
 import { QuizDataService } from '../../../services/quiz-data.service';
@@ -22,7 +23,7 @@ export interface UserAnswer {
   quizAddress: string;
   userAddress: string | null;
   questionIndex: number;
-  answer: number;
+  answer: number | string;
   answerTimeMs: number; // Time taken to answer in milliseconds
 }
 
@@ -36,7 +37,8 @@ export interface UserAnswer {
     MatButtonModule,
     MatRadioModule,
     MatDialogModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './live-quiz.component.html',
   styleUrls: ['./live-quiz.component.scss']
@@ -50,7 +52,7 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
   currentQuestion: Question | null = null;
   currentQuestionIndex: number = 0;
   selectedAnswer: number | null = null;
-  userAnswer: UserAnswer = { quizAddress: '', userAddress: '', questionIndex: 0, answer: -1, answerTimeMs: 0 };
+  userAnswer: UserAnswer = { quizAddress: '', userAddress: '', questionIndex: 0, answer: 'X', answerTimeMs: 0 };
   isCreator: boolean = false;
   private questionTimer: any;
   private timerInterval: any;
@@ -208,7 +210,7 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
 
   // Helper method to submit answer with max time when user doesn't answer
   private async submitAnswerWithMaxTime() {
-    this.userAnswer.answer = -1; // No answer selected
+    this.userAnswer.answer = 'X'; // No answer selected
     this.userAnswer.questionIndex = this.currentQuestionIndex;
     this.userAnswer.answerTimeMs = this.QUESTION_DURATION; // Max time
     

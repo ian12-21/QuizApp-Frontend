@@ -16,7 +16,7 @@
 
       <mat-form-field appearance="fill">
         <mat-label>Number of Questions</mat-label>
-        <input matInput type="text" formControlName="numberOfQuestions" required min="1" max="20" placeholder="1-20">
+        <input matInput type="text" formControlName="numberOfQuestions" required min="1" max="50" placeholder="1-50">
         <mat-error *ngIf="quizForm.get('numberOfQuestions')?.hasError('required')">
           Number of questions is required
         </mat-error>
@@ -24,7 +24,7 @@
           Minimum 1 question required
         </mat-error>
         <mat-error *ngIf="quizForm.get('numberOfQuestions')?.hasError('max')">
-          Maximum 20 questions allowed
+          Maximum 50 questions allowed
         </mat-error>
         <mat-error *ngIf="quizForm.get('numberOfQuestions')?.hasError('notNumber')">
           Please enter numbers only

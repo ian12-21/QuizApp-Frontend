@@ -4,6 +4,16 @@
 </div>
 
 <div class="quiz-container">
+  <!-- Loading spinner overlay for non-creator users -->
+  <div class="loading-overlay" *ngIf="!isCreator && isFinished">
+    <div class="loading-content">
+      <mat-spinner diameter="60" color="primary"></mat-spinner>
+      <p class="loading-text">
+        {{ canEndQuiz ? 'Waiting for creator to end quiz' : 'Creator is submitting all answers...' }}
+      </p>
+    </div>
+  </div>
+
   <div class="quiz-card" *ngIf="currentQuestion">
     <div class="question-timer">
       <!-- Use inline style for direct animation control -->
