@@ -33,19 +33,19 @@ flowchart LR
 
 ```mermaid
 sequenceDiagram
-    participant Host
+    participant Kreator
     participant Frontend
     participant Backend
     participant FactorySC as QuizFactoryContract
     participant QuizSC as QuizContract
 
-    Host->>Frontend: Compose quiz, set questions/answers
+    Kreator->>Frontend: Compose quiz, set questions/answers
     Frontend->>FactorySC: createBasicQuiz(questionCount, answersHash)
     FactorySC->>QuizSC: create Quiz instance
     FactorySC-->>Frontend: Returns quizAddress
     Frontend->>Backend: POST /api/quiz/create {quiz metadata, quizAddress}
     Backend-->>Frontend: Returns PIN
-    Frontend->>Host: Display PIN to share with players
+    Frontend->>Kreator: Display PIN to share with players
 ```
 
 ### 2. Joining a Quiz
