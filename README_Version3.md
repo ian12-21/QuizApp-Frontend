@@ -8,13 +8,13 @@ This is the frontend for **QuizApp**, a decentralized quiz platform that combine
 
 ```mermaid
 flowchart LR
-    User["User (Kreator/Sudionik)"]
+    User["User (Host/Player)"]
     Frontend["QuizApp Frontend"]
     Backend["QuizApp Backend"]
     DB["MongoDB"]
     Ethereum["Ethereum"]
 
-    Korisnik -- "UI/Wallet" --> Frontend
+    User -- "UI/Wallet" --> Frontend
     Frontend -- "REST API" --> Backend
     Backend -- "DB Persist" --> DB
     Backend -- "Web3" --> Ethereum
@@ -33,83 +33,83 @@ flowchart LR
 
 ```mermaid
 sequenceDiagram
-    participant Kreator
+    participant Host
     participant Frontend
     participant Backend
     participant FactorySC as QuizFactoryContract
     participant QuizSC as QuizContract
 
-    Kreator->>Frontend: kreira quiz, kreira pitanja/odgovore
+    Host->>Frontend: Compose quiz, set questions/answers
     Frontend->>FactorySC: createBasicQuiz(questionCount, answersHash)
-    FactorySC->>QuizSC: kreira instancu Quiz-a
-    FactorySC-->>Frontend: vraća quizAddress
+    FactorySC->>QuizSC: create Quiz instance
+    FactorySC-->>Frontend: Returns quizAddress
     Frontend->>Backend: POST /api/quiz/create {quiz metadata, quizAddress}
-    Backend-->>Frontend: vraća PIN
-    Frontend->>Host: Prikaži PIN
+    Backend-->>Frontend: Returns PIN
+    Frontend->>Host: Display PIN to share with players
 ```
 
 ### 2. Joining a Quiz
 
 ```mermaid
 sequenceDiagram
-    participant Sudionik
+    participant Player
     participant Frontend
     participant Backend
 
-    Player->>Frontend: unese PIN
+    Player->>Frontend: Enter PIN
     Frontend->>Backend: GET /api/quiz/:pin
-    Backend-->>Frontend: Quiz detalji (questions, quizAddress, etc.)
-    Frontend->>Player: Prikaži čekaonicu
+    Backend-->>Frontend: Quiz details (questions, quizAddress, etc.)
+    Frontend->>Player: Show quiz lobby, connect wallet
 ```
 
 ### 3. Submitting an Answer
 
 ```mermaid
 sequenceDiagram
-    participant Sudionik
+    participant Player
     participant Frontend
     participant Backend
     participant DB as MongoDB
 
-    Player->>Frontend: Izaberi odgovor na pitanje
+    Player->>Frontend: Select answer to question
     Frontend->>Backend: POST /api/quiz/:quizAddress/submit-answers {userAnswer}
     Backend->>DB: Store/update answer in UserAnswers
-    Backend-->>Frontend: vrati success
-    Frontend->>Player: potvrdi success
+    Backend-->>Frontend: Return success
+    Frontend->>Player: confirm success
 ```
 
 ### 4. Submitting All Answers (Host/Admin)
 
 ```mermaid
 sequenceDiagram
-    participant Kreator
+    participant Host
     participant Frontend
     participant Backend
     participant QuizSC as QuizContract
     participant Wallet as HostWallet
 
-    Host->>Frontend: Pokreni "Submit all answers"
+    Host->>Frontend: Trigger "Submit all answers"
     Frontend->>Backend: GET /api/quiz/:quizAddress/prepare-submit-answers
-    Backend-->>Frontend: vrati transactionData (players, answers, scores)
-    Frontend->>Wallet: Kreator potvrdi transakciju QuizSC.submitAllAnswers
+    Backend-->>Frontend: Returns transactionData (players, answers, scores)
+    Frontend->>Wallet: User signs transaction to QuizSC.submitAllAnswers
     Wallet->>QuizSC: submitAllAnswers(players, answers, scores)
-    QuizSC-->>Frontend: Emitira event, potvrdi predaju
-    Frontend->>Host: Prikaži rezultate predaje
+    QuizSC-->>Frontend: Emit event, confirm submission
+    Frontend->>Host: Show submission result
 ```
 
 ### 5. Ending a Quiz
 
 ```mermaid
 sequenceDiagram
-    participant Kreator
+    participant Host
     participant Frontend
     participant QuizSC as QuizContract
 
-    Host->>Frontend: "End Quiz" poziv
-    Frontend->>QuizSC: endQuiz(correctAnswers, winner, score) (potpisana od kreatora)
-    QuizSC-->>Frontend: emitiraj QuizFinished event
-    Frontend->>Host: Prikaži top 3 sudionika 
-    Frontend->>Players: Prikaži rezultate
+    Host->>Frontend: "End Quiz" action
+    Frontend->>QuizSC: endQuiz(correctAnswers, winner, score) (signed by host)
+    QuizSC-->>Frontend: Emit QuizFinished event
+    Frontend->>Host: Display winner and final ranking
+    Frontend->>Players: Display results
 ```
 
 ---
