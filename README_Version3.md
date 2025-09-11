@@ -33,83 +33,83 @@ flowchart LR
 
 ```mermaid
 sequenceDiagram
-    participant Host
+    participant Kreator
     participant Frontend
     participant Backend
     participant FactorySC as QuizFactoryContract
     participant QuizSC as QuizContract
 
-    Host->>Frontend: Compose quiz, set questions/answers
+    Kreator->>Frontend: kreira quiz, kreira pitanja/odgovore
     Frontend->>FactorySC: createBasicQuiz(questionCount, answersHash)
-    FactorySC->>QuizSC: create Quiz instance
-    FactorySC-->>Frontend: Returns quizAddress
+    FactorySC->>QuizSC: kreira instancu Quiz-a
+    FactorySC-->>Frontend: vraća quizAddress
     Frontend->>Backend: POST /api/quiz/create {quiz metadata, quizAddress}
-    Backend-->>Frontend: Returns PIN
-    Frontend->>Host: Display PIN to share with players
+    Backend-->>Frontend: vraća PIN
+    Frontend->>Host: Prikaži PIN
 ```
 
 ### 2. Joining a Quiz
 
 ```mermaid
 sequenceDiagram
-    participant Player
+    participant Sudionik
     participant Frontend
     participant Backend
 
-    Player->>Frontend: Enter PIN
+    Player->>Frontend: unese PIN
     Frontend->>Backend: GET /api/quiz/:pin
-    Backend-->>Frontend: Quiz details (questions, quizAddress, etc.)
-    Frontend->>Player: Show quiz lobby, connect wallet
+    Backend-->>Frontend: Quiz detalji (questions, quizAddress, etc.)
+    Frontend->>Player: Prikaži čekaonicu
 ```
 
 ### 3. Submitting an Answer
 
 ```mermaid
 sequenceDiagram
-    participant Player
+    participant Sudionik
     participant Frontend
     participant Backend
     participant DB as MongoDB
 
-    Player->>Frontend: Select answer to question
+    Player->>Frontend: Izaberi odgovor na pitanje
     Frontend->>Backend: POST /api/quiz/:quizAddress/submit-answers {userAnswer}
     Backend->>DB: Store/update answer in UserAnswers
-    Backend-->>Frontend: Return success
-    Frontend->>Player: confirm success
+    Backend-->>Frontend: vrati success
+    Frontend->>Player: potvrdi success
 ```
 
 ### 4. Submitting All Answers (Host/Admin)
 
 ```mermaid
 sequenceDiagram
-    participant Host
+    participant Kreator
     participant Frontend
     participant Backend
     participant QuizSC as QuizContract
     participant Wallet as HostWallet
 
-    Host->>Frontend: Trigger "Submit all answers"
+    Host->>Frontend: Pokreni "Submit all answers"
     Frontend->>Backend: GET /api/quiz/:quizAddress/prepare-submit-answers
-    Backend-->>Frontend: Returns transactionData (players, answers, scores)
-    Frontend->>Wallet: User signs transaction to QuizSC.submitAllAnswers
+    Backend-->>Frontend: vrati transactionData (players, answers, scores)
+    Frontend->>Wallet: Kreator potvrdi transakciju QuizSC.submitAllAnswers
     Wallet->>QuizSC: submitAllAnswers(players, answers, scores)
-    QuizSC-->>Frontend: Emit event, confirm submission
-    Frontend->>Host: Show submission result
+    QuizSC-->>Frontend: Emitira event, potvrdi predaju
+    Frontend->>Host: Prikaži rezultate predaje
 ```
 
 ### 5. Ending a Quiz
 
 ```mermaid
 sequenceDiagram
-    participant Host
+    participant Kreator
     participant Frontend
     participant QuizSC as QuizContract
 
-    Host->>Frontend: "End Quiz" action
-    Frontend->>QuizSC: endQuiz(correctAnswers, winner, score) (signed by host)
-    QuizSC-->>Frontend: Emit QuizFinished event
-    Frontend->>Host: Display winner and final ranking
-    Frontend->>Players: Display results
+    Host->>Frontend: "End Quiz" poziv
+    Frontend->>QuizSC: endQuiz(correctAnswers, winner, score) (potpisana od kreatora)
+    QuizSC-->>Frontend: emitiraj QuizFinished event
+    Frontend->>Host: Prikaži top 3 sudionika 
+    Frontend->>Players: Prikaži rezultate
 ```
 
 ---
