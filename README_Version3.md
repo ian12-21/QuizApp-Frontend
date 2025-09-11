@@ -8,13 +8,13 @@ This is the frontend for **QuizApp**, a decentralized quiz platform that combine
 
 ```mermaid
 flowchart LR
-    User["User (Host/Player)"]
+    User["User (Kreator/Sudionik)"]
     Frontend["QuizApp Frontend"]
     Backend["QuizApp Backend"]
     DB["MongoDB"]
     Ethereum["Ethereum"]
 
-    User -- "UI/Wallet" --> Frontend
+    Korisnik -- "UI/Wallet" --> Frontend
     Frontend -- "REST API" --> Backend
     Backend -- "DB Persist" --> DB
     Backend -- "Web3" --> Ethereum
