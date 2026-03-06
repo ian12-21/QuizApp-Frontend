@@ -1,34 +1,34 @@
 <section class="welcome-section container">
-    <div class="welcome-page-container">
-      <div class="container-wrapper">
-        <h1>Welcome to Quiz DApp</h1>
-        <p>Create or join quizzes and win prizes!</p>
-        
-        <ng-container *ngIf="!walletService.isConnected()">
-          <p>Connect wallet to continue</p>
-          <div class="button-section">
-            <div class="button-container">
-                <button class="connect-button" (click)="connectWallet()">
-                  <span>{{ walletService.isConnecting() ? 'Connecting...' : 'Connect Wallet' }}</span>
-                </button>
-                <button class="about-button" routerLink="/about">About QuizApp</button>
-            </div>
-          </div>
-        </ng-container>
+  <div class="welcome-page-container">
+    <div class="container-wrapper">
+      <h1>Welcome to Quiz DApp</h1>
+      <p>Create or join quizzes and win prizes!</p>
 
-        <ng-container *ngIf="walletService.isConnected()">
-          <p>Connected: {{ walletService.shortAddress() }}</p>
-          <div class="button-section">
-            <div class="button-container">
-              <button class="create-button" (click)="openCreateQuizDialog()">Create a Quiz</button>
-              <button class="join-button" (click)="joinQuizDialog()">Join a Quiz</button>
-            </div>
-            <div class="button-container">
-              <button class="search-button" routerLink="/search-results">Search Quiz & Results</button>
-              <button class="about-button" routerLink="/about">About QuizApp</button>
-            </div>
+      @if (!walletService.isConnected()) {
+        <p>Connect wallet to continue</p>
+        <div class="button-section">
+          <div class="button-container">
+            <button class="connect-button" (click)="connectWallet()">
+              <span>{{ walletService.isConnecting() ? 'Connecting...' : 'Connect Wallet' }}</span>
+            </button>
+            <button class="about-button" routerLink="/about">About QuizApp</button>
           </div>
-        </ng-container>
-      </div>
+        </div>
+      }
+
+      @if (walletService.isConnected()) {
+        <p>Connected: {{ walletService.shortAddress() }}</p>
+        <div class="button-section">
+          <div class="button-container">
+            <button class="create-button" (click)="openCreateQuizDialog()">Create a Quiz</button>
+            <button class="join-button" (click)="joinQuizDialog()">Join a Quiz</button>
+          </div>
+          <div class="button-container">
+            <button class="search-button" routerLink="/search-results">Search Quiz & Results</button>
+            <button class="about-button" routerLink="/about">About QuizApp</button>
+          </div>
+        </div>
+      }
     </div>
-  </section>
+  </div>
+</section>

@@ -1,20 +1,26 @@
 <div class="dialog-container">
   <h2>Join Quiz</h2>
-  
+
   <form [formGroup]="joinForm" (ngSubmit)="onSubmit()">
     <div class="form-fields">
       <mat-form-field appearance="fill">
         <mat-label>Quiz PIN</mat-label>
         <input matInput formControlName="quizPin" required maxlength="6" minlength="6" pattern="[0-9]*" placeholder="Enter 6-digit PIN">
-        <mat-error *ngIf="joinForm.get('quizPin')?.hasError('required')">
-          Quiz PIN is required
-        </mat-error>
-        <mat-error *ngIf="joinForm.get('quizPin')?.hasError('minlength') || joinForm.get('quizPin')?.hasError('maxlength')">
-          Quiz PIN must be 6 digits
-        </mat-error>
-        <mat-error *ngIf="joinForm.get('quizPin')?.hasError('pattern')">
-          Quiz PIN must contain only numbers
-        </mat-error>
+        @if (joinForm.get('quizPin')?.hasError('required')) {
+          <mat-error>
+            Quiz PIN is required
+          </mat-error>
+        }
+        @if (joinForm.get('quizPin')?.hasError('minlength') || joinForm.get('quizPin')?.hasError('maxlength')) {
+          <mat-error>
+            Quiz PIN must be 6 digits
+          </mat-error>
+        }
+        @if (joinForm.get('quizPin')?.hasError('pattern')) {
+          <mat-error>
+            Quiz PIN must contain only numbers
+          </mat-error>
+        }
       </mat-form-field>
     </div>
 

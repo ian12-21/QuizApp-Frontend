@@ -1,34 +1,46 @@
 <div class="dialog-container">
   <h2>Create New Quiz</h2>
-  
+
   <form [formGroup]="quizForm" (ngSubmit)="onSubmit()">
     <div class="form-fields">
       <mat-form-field appearance="fill">
         <mat-label>Quiz Name</mat-label>
         <input matInput formControlName="quizName" required placeholder="Enter quiz name">
-        <mat-error *ngIf="quizForm.get('quizName')?.hasError('required')">
-          Quiz name is required
-        </mat-error>
-        <mat-error *ngIf="quizForm.get('quizName')?.hasError('onlyNumbers')">
-          Quiz name cannot contain only numbers
-        </mat-error>
+        @if (quizForm.get('quizName')?.hasError('required')) {
+          <mat-error>
+            Quiz name is required
+          </mat-error>
+        }
+        @if (quizForm.get('quizName')?.hasError('onlyNumbers')) {
+          <mat-error>
+            Quiz name cannot contain only numbers
+          </mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>Number of Questions</mat-label>
         <input matInput type="text" formControlName="numberOfQuestions" required min="1" max="50" placeholder="1-50">
-        <mat-error *ngIf="quizForm.get('numberOfQuestions')?.hasError('required')">
-          Number of questions is required
-        </mat-error>
-        <mat-error *ngIf="quizForm.get('numberOfQuestions')?.hasError('min')">
-          Minimum 1 question required
-        </mat-error>
-        <mat-error *ngIf="quizForm.get('numberOfQuestions')?.hasError('max')">
-          Maximum 50 questions allowed
-        </mat-error>
-        <mat-error *ngIf="quizForm.get('numberOfQuestions')?.hasError('notNumber')">
-          Please enter numbers only
-        </mat-error>
+        @if (quizForm.get('numberOfQuestions')?.hasError('required')) {
+          <mat-error>
+            Number of questions is required
+          </mat-error>
+        }
+        @if (quizForm.get('numberOfQuestions')?.hasError('min')) {
+          <mat-error>
+            Minimum 1 question required
+          </mat-error>
+        }
+        @if (quizForm.get('numberOfQuestions')?.hasError('max')) {
+          <mat-error>
+            Maximum 50 questions allowed
+          </mat-error>
+        }
+        @if (quizForm.get('numberOfQuestions')?.hasError('notNumber')) {
+          <mat-error>
+            Please enter numbers only
+          </mat-error>
+        }
       </mat-form-field>
     </div>
 

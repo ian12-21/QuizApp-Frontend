@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -31,7 +31,6 @@ export interface UserAnswer {
   selector: 'app-live-quiz',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     MatCardModule,
     MatButtonModule,
@@ -39,7 +38,7 @@ export interface UserAnswer {
     MatDialogModule,
     MatSnackBarModule,
     MatProgressSpinnerModule
-  ],
+],
   templateUrl: './live-quiz.component.html',
   styleUrls: ['./live-quiz.component.scss']
 })

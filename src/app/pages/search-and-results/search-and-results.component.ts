@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -44,7 +44,6 @@ interface PlayerResult {
 @Component({
   selector: 'app-search-and-results',
   imports: [
-    CommonModule,
     FormsModule,
     RouterModule,
     MatCardModule,
@@ -55,7 +54,7 @@ interface PlayerResult {
     MatFormFieldModule,
     MatProgressSpinnerModule,
     MatSnackBarModule
-  ],
+],
   templateUrl: './search-and-results.component.html',
   styleUrls: ['./search-and-results.component.scss']
 })

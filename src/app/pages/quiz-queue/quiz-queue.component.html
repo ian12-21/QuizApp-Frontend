@@ -7,36 +7,47 @@
   <div class="quiz-card">
     <div class="quiz-details">
       <div class="detail-item quiz-address">
-        <strong>Quiz Address:</strong> 
+        <strong>Quiz Address:</strong>
         <a href="https://amoy.polygonscan.com/address/{{ quizAddress() }}" target="_blank" class="address">{{ quizAddress() }}</a>
       </div>
-      
-      <div *ngIf="quizPin" class="detail-item quiz-pin">
-        <strong>Quiz PIN:</strong> 
-        <span class="pin">{{ quizPin() }}</span>
-      </div>
+
+      @if (quizPin()) {
+        <div class="detail-item quiz-pin">
+          <strong>Quiz PIN:</strong>
+          <span class="pin">{{ quizPin() }}</span>
+        </div>
+      }
     </div>
 
     <div class="players-section">
       <h2>Joined Players ({{ players().length }})</h2>
       <div class="players-list">
-        <div *ngFor="let player of players()" class="player-item">
-          {{ player }}
-          <span *ngIf="player === creatorAddress()" style="color: #d43bd4; font-weight: 12px;">(Creator)</span>
-          <span *ngIf="player === this.walletService.address()" style="color: #3071ab; font-weight: 12px;">(You)</span>
-        </div>
-        <div *ngIf="players().length === 0" class="no-players">
-          Waiting for players to join...
-        </div>
+        @for (player of players(); track player) {
+          <div class="player-item">
+            {{ player }}
+            @if (player === creatorAddress()) {
+              <span style="color: #d43bd4; font-weight: 12px;">(Creator)</span>
+            }
+            @if (player === this.walletService.address()) {
+              <span style="color: #3071ab; font-weight: 12px;">(You)</span>
+            }
+          </div>
+        }
+        @if (players().length === 0) {
+          <div class="no-players">
+            Waiting for players to join...
+          </div>
+        }
       </div>
     </div>
 
-    <div class="quiz-actions" *ngIf="creatorAddress() === this.walletService.address()">
-      <button mat-raised-button color="primary" 
-
-              (click)="startQuiz()">
-        Start Quiz
-      </button>
-    </div>
+    @if (creatorAddress() === this.walletService.address()) {
+      <div class="quiz-actions">
+        <button mat-raised-button color="primary"
+          (click)="startQuiz()">
+          Start Quiz
+        </button>
+      </div>
+    }
   </div>
 </div>

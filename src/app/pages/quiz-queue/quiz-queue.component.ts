@@ -1,6 +1,6 @@
 import { Component, OnInit, PLATFORM_ID, Inject, signal, effect } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,7 +14,7 @@ import { SocketService } from '../../../services/socket.service';
   templateUrl: './quiz-queue.component.html',
   styleUrls: ['./quiz-queue.component.scss'],
   standalone: true,
-  imports: [CommonModule, MatCardModule, MatListModule, MatButtonModule],
+  imports: [MatCardModule, MatListModule, MatButtonModule],
 })
 export class QuizQueueComponent implements OnInit {
   quizAddress = signal('');

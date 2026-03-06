@@ -4,20 +4,19 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { CommonModule } from '@angular/common';
+
 import { QuizService } from '../../../services/quizContracts.service';
 
 @Component({
   selector: 'app-join-quiz-pop-up',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
     MatDialogModule
-  ],
+],
   templateUrl: './join-quiz-pop-up.component.html',
   styleUrls: ['./join-quiz-pop-up.component.scss']
 })

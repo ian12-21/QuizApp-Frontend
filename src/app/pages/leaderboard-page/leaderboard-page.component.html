@@ -10,7 +10,7 @@
   <div class="leaderboard-card">
     <div class="leaderboard-content">
       <h2>Leaderboard</h2>
-      
+
       <div class="player-list">
         <div class="player-header">
           <div class="rank">Rank</div>
@@ -18,11 +18,15 @@
           <div class="score">Score</div>
         </div>
 
-        <div *ngFor="let player of players; let i = index" class="player-item" [class.winner-row]="i === 0">
-          <div class="rank">{{ i + 1 }}</div>
-          <div class="player-name">{{ shortenAddress(player.userAddress) }} <span *ngIf="player.userAddress === walletService.address()" style="color: #3071ab; font-weight: 12px;">(You)</span></div>
-          <div class="score">{{ player.score }}</div>
-        </div>
+        @for (player of players; track player; let i = $index) {
+          <div class="player-item" [class.winner-row]="i === 0">
+            <div class="rank">{{ i + 1 }}</div>
+            <div class="player-name">{{ shortenAddress(player.userAddress) }} @if (player.userAddress === walletService.address()) {
+              <span style="color: #3071ab; font-weight: 12px;">(You)</span>
+            }</div>
+            <div class="score">{{ player.score }}</div>
+          </div>
+        }
       </div>
 
     </div>
@@ -32,11 +36,11 @@
 <!-- More Info Section at bottom -->
 <div class="more-info-section">
   <p class="info-text">For more detailed information about this quiz and individual player results</p>
-  <button mat-raised-button 
-          color="primary" 
-          routerLink="/search-results"
-          class="more-info-btn"
-          (click)="exit()">
+  <button mat-raised-button
+    color="primary"
+    routerLink="/search-results"
+    class="more-info-btn"
+    (click)="exit()">
     <mat-icon>search</mat-icon>
     View Detailed Results
   </button>

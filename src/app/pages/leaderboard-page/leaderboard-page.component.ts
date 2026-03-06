@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { SocketService } from '../../../services/socket.service';
 import { QuizService } from '../../../services/quizContracts.service';
 import { ActivatedRoute } from '@angular/router';
@@ -11,7 +11,7 @@ import { WalletService } from '../../../services/wallet.service';
 
 @Component({
   selector: 'app-leaderboard-page',
-  imports: [CommonModule, MatCardModule, MatButtonModule, MatIconModule, RouterModule],
+  imports: [MatCardModule, MatButtonModule, MatIconModule, RouterModule],
   templateUrl: './leaderboard-page.component.html',
   styleUrls: ['./leaderboard-page.component.scss'],
   standalone: true

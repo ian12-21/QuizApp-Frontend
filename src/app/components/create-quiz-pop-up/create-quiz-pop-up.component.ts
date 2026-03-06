@@ -4,19 +4,18 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-create-quiz-pop-up',
   standalone: true,
   imports: [
-    CommonModule,
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
     MatDialogModule
-  ],
+],
   templateUrl: './create-quiz-pop-up.component.html',
   styleUrls: ['./create-quiz-pop-up.component.scss']
 })

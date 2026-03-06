@@ -5,83 +5,79 @@
 
 <form (ngSubmit)="onSubmit()" class="quiz-form">
   <div class="questions-container">
-    <div *ngFor="let questionForm of questionForms; let i = index" class="question-card">
-      <div style="display: flex; flex-direction: column; width: 100%;">
-        <h2>Question {{ i + 1 }}</h2>
-
-        <input [(ngModel)]="questionForm.question" 
-               [name]="'question' + i"
-               placeholder="Type your question here">
-        
-        <div class="answers-container">
-          <div class="answer-input">
-            <input [(ngModel)]="questionForm.answers[0]"
-                   [name]="'answer' + i + '-' + 0"
-                   [placeholder]="'Enter answer ' + ['A', 'B', 'C', 'D'][0]"
-                   (input)="onAnswerInput(i, 0)">
-            <mat-radio-group [(ngModel)]="questionForm.correctAnswer"
-                             [name]="'correctAnswer' + i">
-              <mat-radio-button [value]="0" 
-                               [disabled]="!hasAnswer(i, 0)">
-                Correct Answer
-              </mat-radio-button>
-            </mat-radio-group>
+    @for (questionForm of questionForms; track questionForm; let i = $index) {
+      <div class="question-card">
+        <div style="display: flex; flex-direction: column; width: 100%;">
+          <h2>Question {{ i + 1 }}</h2>
+          <input [(ngModel)]="questionForm.question"
+            [name]="'question' + i"
+            placeholder="Type your question here">
+          <div class="answers-container">
+            <div class="answer-input">
+              <input [(ngModel)]="questionForm.answers[0]"
+                [name]="'answer' + i + '-' + 0"
+                [placeholder]="'Enter answer ' + ['A', 'B', 'C', 'D'][0]"
+                (input)="onAnswerInput(i, 0)">
+              <mat-radio-group [(ngModel)]="questionForm.correctAnswer"
+                [name]="'correctAnswer' + i">
+                <mat-radio-button [value]="0"
+                  [disabled]="!hasAnswer(i, 0)">
+                  Correct Answer
+                </mat-radio-button>
+              </mat-radio-group>
+            </div>
+            <div class="answer-input">
+              <input [(ngModel)]="questionForm.answers[1]"
+                [name]="'answer' + i + '-' + 1"
+                [placeholder]="'Enter answer ' + ['A', 'B', 'C', 'D'][1]"
+                (input)="onAnswerInput(i, 1)">
+              <mat-radio-group [(ngModel)]="questionForm.correctAnswer"
+                [name]="'correctAnswer' + i">
+                <mat-radio-button [value]="1"
+                  [disabled]="!hasAnswer(i, 1)">
+                  Correct Answer
+                </mat-radio-button>
+              </mat-radio-group>
+            </div>
+            <div class="answer-input">
+              <input [(ngModel)]="questionForm.answers[2]"
+                [name]="'answer' + i + '-' + 2"
+                [placeholder]="'Enter answer ' + ['A', 'B', 'C', 'D'][2]"
+                (input)="onAnswerInput(i, 2)">
+              <mat-radio-group [(ngModel)]="questionForm.correctAnswer"
+                [name]="'correctAnswer' + i">
+                <mat-radio-button [value]="2"
+                  [disabled]="!hasAnswer(i, 2)">
+                  Correct Answer
+                </mat-radio-button>
+              </mat-radio-group>
+            </div>
+            <div class="answer-input">
+              <input [(ngModel)]="questionForm.answers[3]"
+                [name]="'answer' + i + '-' + 3"
+                [placeholder]="'Enter answer ' + ['A', 'B', 'C', 'D'][3]"
+                (input)="onAnswerInput(i, 3)">
+              <mat-radio-group [(ngModel)]="questionForm.correctAnswer"
+                [name]="'correctAnswer' + i">
+                <mat-radio-button [value]="3"
+                  [disabled]="!hasAnswer(i, 3)">
+                  Correct Answer
+                </mat-radio-button>
+              </mat-radio-group>
+            </div>
           </div>
-
-          <div class="answer-input">
-            <input [(ngModel)]="questionForm.answers[1]"
-                   [name]="'answer' + i + '-' + 1"
-                   [placeholder]="'Enter answer ' + ['A', 'B', 'C', 'D'][1]"
-                   (input)="onAnswerInput(i, 1)">
-            <mat-radio-group [(ngModel)]="questionForm.correctAnswer"
-                             [name]="'correctAnswer' + i">
-              <mat-radio-button [value]="1" 
-                               [disabled]="!hasAnswer(i, 1)">
-                Correct Answer
-              </mat-radio-button>
-            </mat-radio-group>
+          <div class="question-actions">
+            <button mat-raised-button
+              [color]="isQuestionSaved(i) ? 'accent' : 'primary'"
+              type="button"
+              (click)="saveQuestion(i)"
+              class="save-question-button">
+              {{ isQuestionSaved(i) ? 'Update Question' : 'Save Question' }}
+            </button>
           </div>
-
-          <div class="answer-input">
-            <input [(ngModel)]="questionForm.answers[2]"
-                   [name]="'answer' + i + '-' + 2"
-                   [placeholder]="'Enter answer ' + ['A', 'B', 'C', 'D'][2]"
-                   (input)="onAnswerInput(i, 2)">
-            <mat-radio-group [(ngModel)]="questionForm.correctAnswer"
-                             [name]="'correctAnswer' + i">
-              <mat-radio-button [value]="2" 
-                               [disabled]="!hasAnswer(i, 2)">
-                Correct Answer
-              </mat-radio-button>
-            </mat-radio-group>
-          </div>
-
-          <div class="answer-input">
-            <input [(ngModel)]="questionForm.answers[3]"
-                   [name]="'answer' + i + '-' + 3"
-                   [placeholder]="'Enter answer ' + ['A', 'B', 'C', 'D'][3]"
-                   (input)="onAnswerInput(i, 3)">
-            <mat-radio-group [(ngModel)]="questionForm.correctAnswer"
-                             [name]="'correctAnswer' + i">
-              <mat-radio-button [value]="3" 
-                               [disabled]="!hasAnswer(i, 3)">
-                Correct Answer
-              </mat-radio-button>
-            </mat-radio-group>
-          </div>
-        </div>
-
-        <div class="question-actions">
-          <button mat-raised-button 
-                  [color]="isQuestionSaved(i) ? 'accent' : 'primary'" 
-                  type="button" 
-                  (click)="saveQuestion(i)"
-                  class="save-question-button">
-            {{ isQuestionSaved(i) ? 'Update Question' : 'Save Question' }}
-          </button>
         </div>
       </div>
-    </div>
+    }
   </div>
 
   <button mat-raised-button color="primary" type="submit" class="submit-button">
