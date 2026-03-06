@@ -18,7 +18,7 @@
           <div class="score">Score</div>
         </div>
 
-        @for (player of players; track player; let i = $index) {
+        @for (player of players(); track player; let i = $index) {
           <div class="player-item" [class.winner-row]="i === 0">
             <div class="rank">{{ i + 1 }}</div>
             <div class="player-name">{{ shortenAddress(player.userAddress) }} @if (player.userAddress === walletService.address()) {

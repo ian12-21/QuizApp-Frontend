@@ -1,4 +1,5 @@
-import { Injectable, signal, effect } from '@angular/core';
+import { Injectable, signal, effect, inject } from '@angular/core';
+import { Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../environments/environment';
 import { WalletService } from '../services/wallet.service';
@@ -7,14 +8,16 @@ import { WalletService } from '../services/wallet.service';
   providedIn: 'root',
 })
 export class SocketService {
+  private readonly walletService = inject(WalletService);
+
   private socket?: Socket;
-  public players = signal<string[]>([]);
+  readonly players = signal<string[]>([]);
   private connectionPromise?: Promise<void>;
 
-  constructor(private walletService: WalletService) {
+  constructor() {
     // Use an effect to react to wallet address changes
     effect(() => {
-      const address = this.walletService.address();   
+      const address = this.walletService.address();
       // Ensure we have a valid address before connecting
       if (address) {
         this.connectSocket(address);
@@ -126,22 +129,28 @@ export class SocketService {
     this.socket.emit('quiz:join', { pin, playerAddress });
   }
 
-  // Listen for quiz start event
-  onQuizStart(callback: (data: { redirectUrl: string }) => void) {
-    if (!this.socket) {
-      console.warn('Socket not initialized. Cannot listen for quiz start.');
-      return;
-    }
-    this.socket.on('quiz:started', callback);
+  onQuizStart$(): Observable<{ redirectUrl: string }> {
+    return new Observable(subscriber => {
+      if (!this.socket) {
+        subscriber.complete();
+        return;
+      }
+      const handler = (data: { redirectUrl: string }) => subscriber.next(data);
+      this.socket.on('quiz:started', handler);
+      return () => { this.socket?.off('quiz:started', handler); };
+    });
   }
 
-  // Listen for quiz end event
-  onQuizEnd(callback: (data: { redirectUrl: string }) => void) {
-    if (!this.socket) {
-      console.warn('Socket not initialized. Cannot listen for quiz end.');
-      return;
-    }
-    this.socket.on('quiz:ended', callback);
+  onQuizEnd$(): Observable<{ redirectUrl: string }> {
+    return new Observable(subscriber => {
+      if (!this.socket) {
+        subscriber.complete();
+        return;
+      }
+      const handler = (data: { redirectUrl: string }) => subscriber.next(data);
+      this.socket.on('quiz:ended', handler);
+      return () => { this.socket?.off('quiz:ended', handler); };
+    });
   }
 
   // Emit quiz start event

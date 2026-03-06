@@ -1,51 +1,53 @@
-import { Injectable, PLATFORM_ID, Inject } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-
-interface QuizData {
-  quizName: string;
-  numberOfQuestions: number;
-  ownerAddress: string;
-}
-
-interface ActiveQuiz {
-  pin: string;
-  quizName: string;
-  creatorAddress: string;
-  quizAddress: string;
-  isCreator: boolean;
-}
+import { QuizData, ActiveQuiz } from '../models/quiz.models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class QuizDataService {
-  private quizData: QuizData | null = null;
-  private activeQuizData: ActiveQuiz | null = null;
-  private activeQuizKey = 'activeQuiz';
-  private isBrowser: boolean;
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+  private readonly activeQuizKey = 'activeQuiz';
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
+  private readonly _quizData = signal<QuizData | null>(null);
+  private readonly _activeQuizData = signal<ActiveQuiz | null>(null);
+
+  readonly quizData = this._quizData.asReadonly();
+  readonly activeQuizData = this._activeQuizData.asReadonly();
+
+  constructor() {
+    if (this.isBrowser) {
+      this.hydrateFromStorage();
+    }
+  }
+
+  private hydrateFromStorage(): void {
+    try {
+      const data = sessionStorage.getItem(this.activeQuizKey);
+      if (data) {
+        this._activeQuizData.set(JSON.parse(data));
+      }
+    } catch (error) {
+      console.error('Error hydrating quiz data from sessionStorage:', error);
+    }
   }
 
   setQuizData(data: QuizData): void {
-    this.quizData = data;
+    this._quizData.set(data);
   }
 
   getQuizData(): QuizData | null {
-    return this.quizData;
+    return this._quizData();
   }
 
   clearQuizData(): void {
-    this.quizData = null;
+    this._quizData.set(null);
   }
 
-  // Set active quiz data
   setActiveQuiz(quizInfo: ActiveQuiz): void {
-    // Always store in memory for server-side rendering
-    this.activeQuizData = quizInfo;
-    
-    // Also store in sessionStorage if in browser
+    this._activeQuizData.set(quizInfo);
+
     if (this.isBrowser) {
       try {
         sessionStorage.setItem(this.activeQuizKey, JSON.stringify(quizInfo));
@@ -57,26 +59,13 @@ export class QuizDataService {
 
   // Get active quiz data
   getActiveQuiz(): ActiveQuiz | null {
-    // If we're in the browser, try to get from sessionStorage first
-    if (this.isBrowser) {
-      try {
-        const data = sessionStorage.getItem(this.activeQuizKey);
-        if (data) {
-          return JSON.parse(data);
-        }
-      } catch (error) {
-        console.error('Error retrieving quiz data from sessionStorage:', error);
-      }
-    }
-    
-    // Fall back to memory storage
-    return this.activeQuizData;
+    return this._activeQuizData();
   }
 
   // Clear active quiz data
   clearActiveQuiz(): void {
-    this.activeQuizData = null;
-    
+    this._activeQuizData.set(null);
+
     if (this.isBrowser) {
       try {
         sessionStorage.removeItem(this.activeQuizKey);

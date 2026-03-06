@@ -28,7 +28,7 @@
             @if (player === creatorAddress()) {
               <span style="color: #d43bd4; font-weight: 12px;">(Creator)</span>
             }
-            @if (player === this.walletService.address()) {
+            @if (player === walletService.address()) {
               <span style="color: #3071ab; font-weight: 12px;">(You)</span>
             }
           </div>
@@ -41,7 +41,7 @@
       </div>
     </div>
 
-    @if (creatorAddress() === this.walletService.address()) {
+    @if (creatorAddress() === walletService.address()) {
       <div class="quiz-actions">
         <button mat-raised-button color="primary"
           (click)="startQuiz()">

@@ -1,128 +1,94 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { WalletService } from '../../../services/wallet.service';
 import { QuizService } from '../../../services/quizContracts.service';
 import { QuizDataService } from '../../../services/quiz-data.service';
 import { SocketService } from '../../../services/socket.service';
-
-interface Question {
-  question: string;
-  answers: string[];
-  correctAnswer: number;
-}
-
-export interface UserAnswer {
-  quizAddress: string;
-  userAddress: string | null;
-  questionIndex: number;
-  answer: number | string;
-  answerTimeMs: number; // Time taken to answer in milliseconds
-}
+import { Question, UserAnswer } from '../../../models/quiz.models';
 
 @Component({
   selector: 'app-live-quiz',
-  standalone: true,
   imports: [
-    FormsModule,
     MatCardModule,
     MatButtonModule,
     MatRadioModule,
     MatDialogModule,
     MatSnackBarModule,
     MatProgressSpinnerModule
-],
+  ],
   templateUrl: './live-quiz.component.html',
-  styleUrls: ['./live-quiz.component.scss']
+  styleUrls: ['./live-quiz.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LiveQuizComponent implements OnInit, OnDestroy {
-  quizPin: string = '';
-  quizAddress: string = '';
-  quizName: string = '';
-  creatorAddress: string = '';
-  questions: Question[] = [];
-  currentQuestion: Question | null = null;
-  currentQuestionIndex: number = 0;
-  selectedAnswer: number | null = null;
-  userAnswer: UserAnswer = { quizAddress: '', userAddress: '', questionIndex: 0, answer: 'X', answerTimeMs: 0 };
-  isCreator: boolean = false;
-  private questionTimer: any;
-  private timerInterval: any;
-  private readonly QUESTION_DURATION = 20000; // 20 seconds
-  isFinished: boolean = false;  
-  timerWidth: number = 100; // Start at 100%
-  canEndQuiz: boolean = false;
-  private questionStartTime: number = 0; // Track when question started
+export class LiveQuizComponent {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly quizService = inject(QuizService);
+  protected readonly walletService = inject(WalletService);
+  private readonly quizDataService = inject(QuizDataService);
+  private readonly socketService = inject(SocketService);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly destroyRef = inject(DestroyRef);
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private quizService: QuizService,
-    public walletService: WalletService,
-    private quizDataService: QuizDataService,
-    private socketService: SocketService,
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar
-  ) {}
+  readonly quizPin = signal('');
+  readonly quizAddress = signal('');
+  readonly quizName = signal('');
+  readonly creatorAddress = signal('');
+  readonly questions = signal<Question[]>([]);
+  readonly currentQuestionIndex = signal(0);
+  readonly selectedAnswer = signal<number | null>(null);
+  readonly isFinished = signal(false);
+  readonly timerWidth = signal(100);
+  readonly canEndQuiz = signal(false);
 
-  async ngOnInit() {
-    try {
-      this.route.params.subscribe(params => {
-        this.quizPin = params['pin'];
-        this.initializeQuiz();
-      });
+  readonly isCreator = computed(() => this.walletService.address() === this.creatorAddress());
+  readonly currentQuestion = computed(() => this.questions()[this.currentQuestionIndex()] ?? null);
 
-      this.socketService.onQuizEnd((data) => {
-        this.router.navigate([data.redirectUrl]);
-      });
-    } catch (error) {
-      console.error('Error in ngOnInit:', error);
-      this.router.navigate(['/']);
-    }
-  }
+  private userAnswer: UserAnswer = { quizAddress: '', userAddress: '', questionIndex: 0, answer: 'X', answerTimeMs: 0 };
+  private questionTimer: ReturnType<typeof setTimeout> | undefined;
+  private timerInterval: ReturnType<typeof setInterval> | undefined;
+  private readonly QUESTION_DURATION = 20000;
+  private questionStartTime = 0;
 
-  ngOnDestroy() {
-    this.clearTimers();
-  }
+  constructor() {
+    this.destroyRef.onDestroy(() => this.clearTimers());
 
-  private clearTimers() {
-    if (this.questionTimer) {
-      clearInterval(this.questionTimer);
-    }
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-    }
+    this.route.params.pipe(
+      takeUntilDestroyed()
+    ).subscribe(params => {
+      this.quizPin.set(params['pin']);
+      this.initializeQuiz();
+    });
+
+    this.socketService.onQuizEnd$().pipe(
+      takeUntilDestroyed()
+    ).subscribe(data => {
+      this.router.navigate([data.redirectUrl]);
+    });
   }
 
   private async initializeQuiz() {
     try {
-      // Fetch quiz data here
-      const quizInfo = await this.quizService.getQuizByPin(this.quizPin);
-      // console.log(quizInfo);
-      
+      const quizInfo = await this.quizService.getQuizByPin(this.quizPin());
+
       if (quizInfo) {
-        this.quizAddress = quizInfo.quizAddress;
-        this.quizName = quizInfo.quizName;
-        this.creatorAddress = quizInfo.creatorAddress;
-        this.questions = quizInfo.questions;
-        this.userAnswer.quizAddress = this.quizAddress;
+        this.quizAddress.set(quizInfo.quizAddress);
+        this.quizName.set(quizInfo.quizName);
+        this.creatorAddress.set(quizInfo.creatorAddress);
+        this.questions.set(quizInfo.questions);
+        this.userAnswer.quizAddress = quizInfo.quizAddress;
         this.userAnswer.userAddress = this.walletService.address();
-        
-        // Check if current user is the creator
-        this.isCreator = this.walletService.address() === quizInfo.creatorAddress;
-        
-        if (this.questions.length > 0) {
-          this.currentQuestion = this.questions[0];
-          this.currentQuestionIndex = 0;
-          
-          // Start the timer for the first question
+
+        if (quizInfo.questions.length > 0) {
+          this.currentQuestionIndex.set(0);
           this.startTimers();
         }
       }
@@ -132,60 +98,67 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
     }
   }
 
+  private clearTimers() {
+    if (this.questionTimer) {
+      clearTimeout(this.questionTimer);
+    }
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
+  }
+
   private startTimers() {
-    // Reset timer width to 100%
-    this.timerWidth = 100;
-    
-    // Record the start time for answer timing
+    this.timerWidth.set(100);
     this.questionStartTime = Date.now();
     
     // Clear any existing timers
     this.clearTimers();
-    
+
     // Create a timer that updates the width every 200ms
     const updateFrequency = 200; // milliseconds
     const steps = this.QUESTION_DURATION / updateFrequency;
     const decrementPerStep = 100 / steps;
-    
+
     this.timerInterval = setInterval(() => {
-      this.timerWidth = Math.max(0, this.timerWidth - decrementPerStep);
+      this.timerWidth.update(w => Math.max(0, w - decrementPerStep));
     }, updateFrequency);
-    
+
     // Set the question timer to move to the next question
     this.questionTimer = setTimeout(() => {
       // Clear the timer interval
       clearInterval(this.timerInterval);
-      
+
       // If user hasn't submitted an answer, submit with max time
-      if (!this.isCreator && this.selectedAnswer === null) {
+      if (!this.isCreator() && this.selectedAnswer() === null) {
         this.submitAnswerWithMaxTime();
       }
-      
-      if (this.currentQuestionIndex < this.questions.length - 1) {
-        this.currentQuestionIndex++;
-        this.currentQuestion = this.questions[this.currentQuestionIndex];
-        this.selectedAnswer = null;
-        
-        // Start the timer for the next question
+
+      if (this.currentQuestionIndex() < this.questions().length - 1) {
+        this.currentQuestionIndex.update(i => i + 1);
+        this.selectedAnswer.set(null);
         this.startTimers();
       } else {
         // Last question finished
-        this.isFinished = true;
+        this.isFinished.set(true);
       }
     }, this.QUESTION_DURATION);
   }
 
+  selectAnswer(index: number) {
+    if (!this.isCreator()) {
+      this.selectedAnswer.set(index);
+    }
+  }
+
   async submitAnswer() {
     //save to backend every time submit is pressed
-    if (this.selectedAnswer !== null) {
+    if (this.selectedAnswer() !== null) {
       // Calculate answer time in milliseconds
       const answerTime = Date.now() - this.questionStartTime;
-      
-      this.userAnswer.answer = this.selectedAnswer;
-      this.userAnswer.questionIndex = this.currentQuestionIndex;
+      this.userAnswer.answer = this.selectedAnswer()!;
+      this.userAnswer.questionIndex = this.currentQuestionIndex();
       this.userAnswer.answerTimeMs = answerTime;
     }
-    //console.log("USER ANSWER 2: ", this.userAnswer);
     try {
       await this.quizService.submitAnswer(this.userAnswer);
       // Show success snackbar
@@ -209,10 +182,10 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
 
   // Helper method to submit answer with max time when user doesn't answer
   private async submitAnswerWithMaxTime() {
-    this.userAnswer.answer = 'X'; // No answer selected
-    this.userAnswer.questionIndex = this.currentQuestionIndex;
-    this.userAnswer.answerTimeMs = this.QUESTION_DURATION; // Max time
-    
+    this.userAnswer.answer = 'X'; // 'X' indicates no answer
+    this.userAnswer.questionIndex = this.currentQuestionIndex();
+    this.userAnswer.answerTimeMs = this.QUESTION_DURATION;
+
     try {
       await this.quizService.submitAnswer(this.userAnswer);
     } catch (error) {
@@ -220,23 +193,14 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
     }
   }
 
-  //function for submiting all users every answer to backend & contract
-  //OLD VERSION FOR SIGNING ON THE BACKEND
-  // async submitAllUsersAnswers() {
-  //   const response = await this.quizService.submitAllUsersAnswers(this.quizAddress);
-  //   if (response){
-  //     this.canEndQuiz = true
-  //   }
-  // }
-
   async endQuiz() {
-    if (!this.isCreator) return;
+    if (!this.isCreator()) return;
 
     this.quizDataService.clearQuizData();
 
     try {
-      await this.quizService.endQuiz(this.quizAddress, this.creatorAddress, this.quizPin);
-      this.socketService.endQuiz(this.quizAddress, this.quizPin);
+      await this.quizService.endQuiz(this.quizAddress(), this.creatorAddress(), this.quizPin());
+      this.socketService.endQuiz(this.quizAddress(), this.quizPin());
     } catch (error) {
       console.error('Error ending quiz:', error);
     }
@@ -244,26 +208,17 @@ export class LiveQuizComponent implements OnInit, OnDestroy {
 
   //function for submitting all users' answers to backend & contract with frontend signing
   async submitAllUsersAnswers() {
-      try {
-          // console.log('Preparing to submit all answers with frontend signing...');
-          
-          // Use the new method that signs on frontend
-          const response = await this.quizService.submitAllUsersAnswersWithFrontendSigning(this.quizAddress);
-          
-          if (response.success) {
-              // console.log('All answers submitted successfully!');
-              // console.log('Transaction hash:', response.transactionHash);
-              // console.log('Winner:', response.winner);
-              
-              this.canEndQuiz = true;
-          } else {
-              throw new Error('Failed to submit answers');
-          }
-      } catch (error) {
-          console.error('Error submitting all answers:', error);
-          // You might want to show an error message to the user here
-          alert('Failed to submit answers. Please try again.');
+    try {
+      const response = await this.quizService.submitAllUsersAnswersWithFrontendSigning(this.quizAddress());
+
+      if (response.success) {
+        this.canEndQuiz.set(true);
+      } else {
+        throw new Error('Failed to submit answers');
       }
+    } catch (error) {
+      console.error('Error submitting all answers:', error);
+      this.snackBar.open('Failed to submit answers. Please try again.', 'Close', { duration: 3000 });
+    }
   }
-  
 }

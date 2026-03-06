@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
-
-import { FormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { Subject, of } from 'rxjs';
+import { debounceTime, filter, switchMap, catchError, tap } from 'rxjs/operators';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,41 +11,15 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { QuizService } from '../../../services/quizContracts.service';
 import { HttpClient } from '@angular/common/http';
+import { QuizService } from '../../../services/quizContracts.service';
+import { QuizSearchResult, QuizInfo, WinnerData, PlayerResult } from '../../../models/quiz.models';
+
 const API_URL = 'http://localhost:3000/api';
-
-interface QuizSearchResult {
-  quizName: string;
-  quizAddress: string;
-  pin: string;
-  creatorAddress: string;
-  answersString: string;
-}
-
-interface QuizInfo {
-  creator: string;
-  questionCount: number;
-  isStarted: boolean;
-  isFinished: boolean;
-  answersHash: string;
-  playerAddresses: string[];
-}
-
-interface WinnerData {
-  winnerAddress: string;
-  winnerScore: number;
-}
-
-interface PlayerResult {
-  answers: string;
-  score: number;
-}
 
 @Component({
   selector: 'app-search-and-results',
   imports: [
-    FormsModule,
     RouterModule,
     MatCardModule,
     MatButtonModule,
@@ -54,79 +29,64 @@ interface PlayerResult {
     MatFormFieldModule,
     MatProgressSpinnerModule,
     MatSnackBarModule
-],
+  ],
   templateUrl: './search-and-results.component.html',
-  styleUrls: ['./search-and-results.component.scss']
+  styleUrls: ['./search-and-results.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SearchAndResultsComponent {
-  searchQuery = '';
-  isSearching = false;
-  selectedQuiz: QuizSearchResult | null = null;
-  quizInfo: QuizInfo | null = null;
-  winner: WinnerData | null = null;
-  players: string[] = [];
-  playerResults: Map<string, PlayerResult> = new Map();
-  loadingWinner = false;
-  loadingPlayers = false;
-  loadingPlayerResults = new Set<string>();
-  
-  // Dropdown functionality
-  searchResults: QuizSearchResult[] = [];
-  showDropdown = false;
-  searchTimeout: any = null;
-  correctAnswers: string[] = [];
-  Winner: boolean = false;
+  private readonly quizService = inject(QuizService);
+  private readonly http = inject(HttpClient);
+  private readonly snackBar = inject(MatSnackBar);
 
-  constructor(
-    private quizService: QuizService,
-    private http: HttpClient,
-    private snackBar: MatSnackBar
-  ) {}
+  readonly searchQuery = signal('');
+  readonly isSearching = signal(false);
+  readonly selectedQuiz = signal<QuizSearchResult | null>(null);
+  readonly quizInfo = signal<QuizInfo | null>(null);
+  readonly winner = signal<WinnerData | null>(null);
+  readonly players = signal<string[]>([]);
+  readonly playerResults = signal<Map<string, PlayerResult>>(new Map());
+  readonly loadingWinner = signal(false);
+  readonly loadingPlayers = signal(false);
+  readonly loadingPlayerResults = signal(new Set<string>());
+  readonly showDropdown = signal(false);
+  readonly correctAnswers = signal<string[]>([]);
 
-  onSearchInput() {
-    // Clear previous timeout
-    if (this.searchTimeout) {
-      clearTimeout(this.searchTimeout);
-    }
+  private readonly searchSubject = new Subject<string>();
 
-    // If search is empty, hide dropdown
-    if (!this.searchQuery.trim()) {
+  readonly searchResults = toSignal(
+    this.searchSubject.pipe(
+      debounceTime(300),
+      filter(query => query.trim().length > 0),
+      tap(() => this.isSearching.set(true)),
+      switchMap(query =>
+        this.http.get<QuizSearchResult[]>(
+          `${API_URL}/quiz/search/results?q=${encodeURIComponent(query)}`
+        ).pipe(catchError(() => of([] as QuizSearchResult[])))
+      ),
+      tap(results => {
+        this.isSearching.set(false);
+        this.showDropdown.set(results.length > 0);
+      })
+    ),
+    { initialValue: [] as QuizSearchResult[] }
+  );
+
+  onSearchInput(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchQuery.set(value);
+
+    if (!value.trim()) {
       this.hideDropdown();
       return;
     }
 
-    // Debounce search to avoid too many API callsselectedQuiz 
-    this.searchTimeout = setTimeout(() => {
-      this.performSearch();
-    }, 300);
-  }
-
-  async performSearch() {
-    if (!this.searchQuery.trim()) return;
-
-    this.isSearching = true;
-
-    try {
-      // Search via backend (by name or address)
-      const searchResults = await this.http.get<QuizSearchResult[]>(
-        `${API_URL}/quiz/search/results?q=${encodeURIComponent(this.searchQuery)}`
-      ).toPromise();
-
-      this.searchResults = searchResults || [];
-      this.showDropdown = this.searchResults.length > 0;
-      
-    } catch (error) {
-      console.error('Error searching quiz:', error);
-      this.searchResults = [];
-      this.showDropdown = false;
-    } finally {
-      this.isSearching = false;
-    }
+    this.searchSubject.next(value);
   }
 
   selectQuiz(quiz: QuizSearchResult) {
-    this.selectedQuiz = quiz;
-    this.searchQuery = '';
+    this.selectedQuiz.set(quiz);
+    this.searchQuery.set('');
     this.hideDropdown();
     
     // Reset all previous quiz data
@@ -136,33 +96,30 @@ export class SearchAndResultsComponent {
     this.loadSelectedQuiz();
   }
 
-  resetQuizData() {
-    // Clear all previous quiz data
-    this.quizInfo = null;
-    this.winner = null;
-    this.players = [];
-    this.playerResults.clear();
-    this.correctAnswers = [];
-    
-    // Reset loading states
-    this.loadingWinner = false;
-    this.loadingPlayers = false;
-    this.loadingPlayerResults.clear();
+  private resetQuizData() {
+    this.quizInfo.set(null);
+    this.winner.set(null);
+    this.players.set([]);
+    this.playerResults.set(new Map());
+    this.correctAnswers.set([]);
+    this.loadingWinner.set(false);
+    this.loadingPlayers.set(false);
+    this.loadingPlayerResults.set(new Set());
   }
 
-  async loadSelectedQuiz() {
-    if (!this.selectedQuiz) return;
+  private async loadSelectedQuiz() {
+    const quiz = this.selectedQuiz();
+    if (!quiz) return;
 
     try {
       // Fetch quiz info from contract
       await this.loadQuizInfo();
       
       // Load correct answers from the quiz data
-      await this.loadCorrectAnswers();
+      this.loadCorrectAnswers();
       
       // Automatically load winner
       await this.loadWinner();
-      
     } catch (error) {
       console.error('Error loading quiz:', error);
       this.showError('Failed to load quiz. Please try again.');
@@ -170,77 +127,79 @@ export class SearchAndResultsComponent {
   }
 
   hideDropdown() {
-    this.showDropdown = false;
-    this.searchResults = [];
+    this.showDropdown.set(false);
   }
 
-  async loadQuizInfo() {
-    if (!this.selectedQuiz) return;
+  private async loadQuizInfo() {
+    const quiz = this.selectedQuiz();
+    if (!quiz) return;
 
     try {
-      this.quizInfo = await this.quizService.getQuizInfo(this.selectedQuiz.quizAddress);
+      const info = await this.quizService.getQuizInfo(quiz.quizAddress);
+      this.quizInfo.set(info);
     } catch (error) {
       console.error('Error loading quiz info:', error);
       this.showError('Failed to load quiz information');
     }
   }
 
-  async loadWinner() {
-    if (!this.selectedQuiz) return;
+  private async loadWinner() {
+    const quiz = this.selectedQuiz();
+    if (!quiz) return;
 
-    this.loadingWinner = true;
+    this.loadingWinner.set(true);
     try {
-      this.winner = await this.quizService.getWinnerForQuiz(this.selectedQuiz.quizAddress);
+      const winnerData = await this.quizService.getWinnerForQuiz(quiz.quizAddress);
+      this.winner.set(winnerData);
     } catch (error) {
       console.error('Error loading winner:', error);
       this.showError('Failed to load winner data');
     } finally {
-      this.loadingWinner = false;
+      this.loadingWinner.set(false);
     }
   }
 
   async loadAllPlayers() {
-    if (!this.selectedQuiz) return;
+    const quiz = this.selectedQuiz();
+    if (!quiz) return;
 
-    this.loadingPlayers = true;
+    this.loadingPlayers.set(true);
     try {
-      this.players = await this.quizService.getAllPlayers(this.selectedQuiz.quizAddress);
+      const result = await this.quizService.getAllPlayers(quiz.quizAddress);
+      this.players.set(result);
     } catch (error) {
       console.error('Error loading players:', error);
       this.showError('Failed to load players');
     } finally {
-      this.loadingPlayers = false;
+      this.loadingPlayers.set(false);
     }
   }
 
   async loadPlayerResults(playerAddress: string) {
-    if (!this.selectedQuiz) return;
+    const quiz = this.selectedQuiz();
+    if (!quiz) return;
 
-    this.loadingPlayerResults.add(playerAddress);
+    this.loadingPlayerResults.update(set => { const s = new Set(set); s.add(playerAddress); return s; });
     try {
-      const result = await this.quizService.getPlayerResults(this.selectedQuiz.quizAddress, playerAddress);
-      this.playerResults.set(playerAddress, result);
+      const result = await this.quizService.getPlayerResults(quiz.quizAddress, playerAddress);
+      this.playerResults.update(map => { const m = new Map(map); m.set(playerAddress, result); return m; });
     } catch (error) {
       console.error('Error loading player results:', error);
       this.showError(`Failed to load results for ${this.shortenAddress(playerAddress)}`);
     } finally {
-      this.loadingPlayerResults.delete(playerAddress);
+      this.loadingPlayerResults.update(set => { const s = new Set(set); s.delete(playerAddress); return s; });
     }
   }
 
-  async loadCorrectAnswers() {
-    if (!this.selectedQuiz) return;
+  private loadCorrectAnswers() {
+    const quiz = this.selectedQuiz();
+    if (!quiz?.answersString) return;
 
     try {
-      // Parse correct answers from the quiz's answersString
-      if (this.selectedQuiz.answersString) {
-        // Parse the answersString - it should be a JSON array or comma-separated string
-        try {
-          this.correctAnswers = JSON.parse(this.selectedQuiz.answersString);
-        } catch {
-          // If JSON parse fails, try splitting by comma
-          this.correctAnswers = this.selectedQuiz.answersString.split(',').map(answer => answer.trim());
-        }
+      try {
+        this.correctAnswers.set(JSON.parse(quiz.answersString));
+      } catch {
+        this.correctAnswers.set(quiz.answersString.split(',').map(answer => answer.trim()));
       }
     } catch (error) {
       console.error('Error loading correct answers:', error);
@@ -248,12 +207,9 @@ export class SearchAndResultsComponent {
   }
 
   getPlayerAnswers(playerAddress: string): string[] {
-    const result = this.playerResults.get(playerAddress);
+    const result = this.playerResults().get(playerAddress);
+    if (!result?.answers) return [];
 
-    if (!result?.answers) {
-      return [];
-    }
-    
     try {
       const parsed = JSON.parse(result.answers);
       
@@ -264,20 +220,12 @@ export class SearchAndResultsComponent {
       
       // If parsed result is a single value, split it into individual characters
       const answerString = String(parsed);
-      const splitAnswers = answerString.split('').map(char => char.trim()).filter(char => char !== '');
-      return splitAnswers;
-      
-    } catch (error) {
-      
-      // If it's already a string, split into individual characters
+      return answerString.split('').map(char => char.trim()).filter(char => char !== '');
+    } catch {
       if (typeof result.answers === 'string') {
-        const splitAnswers = result.answers.split('').map(char => char.trim()).filter(char => char !== '');
-        return splitAnswers;
+        return result.answers.split('').map(char => char.trim()).filter(char => char !== '');
       }
-      
-      // Fallback: convert to string and split
-      const fallbackAnswers = String(result.answers).split('').map(char => char.trim()).filter(char => char !== '');
-      return fallbackAnswers;
+      return String(result.answers).split('').map(char => char.trim()).filter(char => char !== '');
     }
   }
 
@@ -287,18 +235,15 @@ export class SearchAndResultsComponent {
   }
 
   getCorrectAnswerForIndex(index: number): string | null {
-    // Handle case where correctAnswers is an array
-    if (Array.isArray(this.correctAnswers)) {
-      return this.correctAnswers[index] || null;
+    const answers = this.correctAnswers();
+    if (Array.isArray(answers)) {
+      return answers[index] || null;
     }
-    
-    // Handle case where correctAnswers is a single combined string
-    if (this.correctAnswers) {
-      const correctAnswersString = String(this.correctAnswers);
+    if (answers) {
+      const correctAnswersString = String(answers);
       const splitCorrectAnswers = correctAnswersString.split('').map(char => char.trim()).filter(char => char !== '');
       return splitCorrectAnswers[index] || null;
     }
-    
     return null;
   }
 
@@ -326,9 +271,9 @@ export class SearchAndResultsComponent {
 
   onEnterKey(event: KeyboardEvent) {
     if (event.key === 'Enter') {
-      // If there are search results, select the first one
-      if (this.searchResults.length > 0) {
-        this.selectQuiz(this.searchResults[0]);
+      const results = this.searchResults();
+      if (results.length > 0) {
+        this.selectQuiz(results[0]);
       }
     } else if (event.key === 'Escape') {
       this.hideDropdown();

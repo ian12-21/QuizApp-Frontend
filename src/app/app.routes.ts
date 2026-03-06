@@ -1,19 +1,41 @@
 import { Routes } from '@angular/router';
-import { WelcomePageComponent } from './pages/welcome-page-component/welcome-page-component.component';
-import { CreateQuestionsComponent } from './pages/create-questions-component/create-questions-component.component';
-import { QuizQueueComponent } from './pages/quiz-queue/quiz-queue.component';
-import { LiveQuizComponent } from './pages/live-quiz/live-quiz.component';
-import { QuizCreationGuard } from '../services/auth-guard.service';
-import { LeaderboardPageComponent } from './pages/leaderboard-page/leaderboard-page.component';
-import { SearchAndResultsComponent } from './pages/search-and-results/search-and-results.component';
-import { AboutPageComponent } from './pages/about-page/about-page.component';
+import { quizCreationGuard } from '../services/auth-guard.service';
 
 export const routes: Routes = [
-  { path: '', component: WelcomePageComponent },
-  { path: 'about', component: AboutPageComponent },
-  { path: 'quiz-creation/:address', component: CreateQuestionsComponent, canActivate: [QuizCreationGuard] },
-  { path: 'quiz-queue/:quiz-address/:pin', component: QuizQueueComponent },
-  { path: 'active-quiz/:pin', component: LiveQuizComponent },
-  { path: 'leaderboard/:quiz-address/:pin', component: LeaderboardPageComponent },
-  { path: 'search-results', component: SearchAndResultsComponent },
+  {
+    path: '',
+    loadComponent: () => import('./pages/welcome-page-component/welcome-page-component.component')
+      .then(m => m.WelcomePageComponent)
+  },
+  {
+    path: 'about',
+    loadComponent: () => import('./pages/about-page/about-page.component')
+      .then(m => m.AboutPageComponent)
+  },
+  {
+    path: 'quiz-creation/:address',
+    loadComponent: () => import('./pages/create-questions-component/create-questions-component.component')
+      .then(m => m.CreateQuestionsComponent),
+    canActivate: [quizCreationGuard]
+  },
+  {
+    path: 'quiz-queue/:quiz-address/:pin',
+    loadComponent: () => import('./pages/quiz-queue/quiz-queue.component')
+      .then(m => m.QuizQueueComponent)
+  },
+  {
+    path: 'active-quiz/:pin',
+    loadComponent: () => import('./pages/live-quiz/live-quiz.component')
+      .then(m => m.LiveQuizComponent)
+  },
+  {
+    path: 'leaderboard/:quiz-address/:pin',
+    loadComponent: () => import('./pages/leaderboard-page/leaderboard-page.component')
+      .then(m => m.LeaderboardPageComponent)
+  },
+  {
+    path: 'search-results',
+    loadComponent: () => import('./pages/search-and-results/search-and-results.component')
+      .then(m => m.SearchAndResultsComponent)
+  },
 ];

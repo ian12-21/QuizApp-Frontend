@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, PLATFORM_ID, Inject } from '@angular/core';
+import { Injectable, signal, computed, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 const isNotNull = <T>(value: T | null): value is NonNullable<T> => value !== null;
@@ -7,31 +7,29 @@ const isNotNull = <T>(value: T | null): value is NonNullable<T> => value !== nul
   providedIn: 'root'
 })
 export class WalletService {
-  // Signals for reactive state management
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly isBrowser = isPlatformBrowser(this.platformId);
+
   readonly address = signal<string | null>(null);
   readonly chainId = signal<number | null>(null);
   readonly isConnecting = signal<boolean>(false);
   readonly error = signal<string | null>(null);
 
-  private readonly isBrowser: boolean;
-
-  // Computed signals
   readonly isConnected = computed(() => isNotNull(this.address()));
   readonly shortAddress = computed(() => {
     const addr = this.address();
     return addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : '';
   });
 
-  constructor(@Inject(PLATFORM_ID) platformId: Object) {
-    this.isBrowser = isPlatformBrowser(platformId);
-    if(this.isBrowser){
+  constructor() {
+    if (this.isBrowser) {
       this.initializeWalletListeners();
       this.checkExistingConnection();
     }
   }
 
-  private get ethereum(): any {
-    return this.isBrowser ? window.ethereum : null;
+  private get ethereum() {
+    return this.isBrowser ? window.ethereum : undefined;
   }
 
   private isWalletInstalled(): boolean {
@@ -41,7 +39,7 @@ export class WalletService {
   private initializeWalletListeners(): void {
     if (this.isWalletInstalled()) {
       // Handle account changes
-      this.ethereum.on('accountsChanged', (accounts: string[]) => {
+      this.ethereum!.on('accountsChanged', (accounts: string[]) => {
         this.address.set(accounts[0] || null);
         if (!accounts[0]) {
           this.handleDisconnect();
@@ -49,12 +47,12 @@ export class WalletService {
       });
 
       // Handle chain changes
-      this.ethereum.on('chainChanged', (chainId: string) => {
+      this.ethereum!.on('chainChanged', (chainId: string) => {
         this.chainId.set(parseInt(chainId, 16));
       });
 
       // Handle disconnect
-      this.ethereum.on('disconnect', () => {
+      this.ethereum!.on('disconnect', () => {
         this.handleDisconnect();
       });
     }
@@ -62,7 +60,7 @@ export class WalletService {
 
   // Network configurations
   private readonly POLYGON_TESTNET = {
-    chainId: '0x13882', 
+    chainId: '0x13882',
     chainName: 'Polygon Amoy Testnet',
     nativeCurrency: {
       name: 'MATIC',
@@ -73,24 +71,9 @@ export class WalletService {
     blockExplorerUrls: ['https://amoy.polygonscan.com/'],
   };
 
-  /* Polygon Mainnet configuration
-  private readonly POLYGON_MAINNET = {
-    chainId: '0x89', // 137
-    chainName: 'Polygon Mainnet',
-    nativeCurrency: {
-      name: 'MATIC',
-      symbol: 'MATIC',
-      decimals: 18
-    },
-    rpcUrls: ['https://polygon-rpc.com'],
-    blockExplorerUrls: ['https://polygonscan.com']
-  };
-  */
-
   private async switchToPolygonNetwork(): Promise<void> {
     try {
-      // Try to switch to the Mumbai network
-      await this.ethereum.request({
+      await this.ethereum!.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: `${this.POLYGON_TESTNET.chainId}` }],
       });
@@ -98,11 +81,11 @@ export class WalletService {
       // This error code indicates that the chain has not been added to MetaMask
       if (switchError.code === 4902) {
         try {
-          await this.ethereum.request({
+          await this.ethereum!.request({
             method: 'wallet_addEthereumChain',
             params: [this.POLYGON_TESTNET],
           });
-        } catch (addError) {
+        } catch {
           throw new Error('Failed to add Polygon network to wallet');
         }
       } else {
@@ -125,13 +108,13 @@ export class WalletService {
       await this.switchToPolygonNetwork();
 
       // Request account access
-      const accounts = await this.ethereum.request({ 
-        method: 'eth_requestAccounts' 
+      const accounts = await this.ethereum!.request({ 
+        method: 'eth_requestAccounts'
       });
 
       // Get current chain ID
-      const tmpChainId = await this.ethereum.request({ 
-        method: 'eth_chainId' 
+      const tmpChainId = await this.ethereum!.request({ 
+        method: 'eth_chainId'
       });
 
       this.address.set(accounts[0]);
@@ -139,7 +122,7 @@ export class WalletService {
       this.chainId.set(parseInt(tmpChainId, 16));
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       this.error.set(this.getErrorMessage(error));
       return false;
     } finally {
@@ -159,7 +142,7 @@ export class WalletService {
 
   private getErrorMessage(error: any): string {
     if (error?.message) {
-      return error.message.includes('User rejected') 
+      return error.message.includes('User rejected')
         ? 'Connection rejected by user.'
         : error.message;
     }
@@ -170,16 +153,16 @@ export class WalletService {
     if (this.isWalletInstalled()) {
       try {
         // Get currently connected accounts
-        const accounts = await this.ethereum.request({ 
+        const accounts = await this.ethereum!.request({ 
           method: 'eth_accounts'  // Note: This doesn't prompt user, unlike eth_requestAccounts
         });
-        
+
         if (accounts.length > 0) {
           // Get current chain ID
-          const chainId = await this.ethereum.request({ 
-            method: 'eth_chainId' 
+          const chainId = await this.ethereum!.request({ 
+            method: 'eth_chainId'
           });
-          
+
           this.address.set(accounts[0]);
           this.chainId.set(parseInt(chainId, 16));
         }

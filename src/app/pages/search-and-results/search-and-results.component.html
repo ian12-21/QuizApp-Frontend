@@ -17,27 +17,27 @@
   <div class="search-section">
     <div class="search-container-wrapper">
       <input class="search-input"
-        [class.dropdown-active]="showDropdown"
-        [(ngModel)]="searchQuery"
-        (input)="onSearchInput()"
+        [class.dropdown-active]="showDropdown()"
+        [value]="searchQuery()"
+        (input)="onSearchInput($event)"
         (keydown)="onEnterKey($event)"
         placeholder="Enter quiz name or contract address">
 
       <!-- Search Results Dropdown -->
-      @if (showDropdown) {
+      @if (showDropdown()) {
         <div class="search-dropdown">
-          @if (isSearching) {
+          @if (isSearching()) {
             <div class="dropdown-loading">
               <mat-spinner diameter="20"></mat-spinner>
               <span>Searching...</span>
             </div>
           }
-          @if (!isSearching && searchResults.length === 0) {
+          @if (!isSearching() && searchResults().length === 0) {
             <div class="dropdown-no-results">
               No quizzes found
             </div>
           }
-          @for (quiz of searchResults; track quiz) {
+          @for (quiz of searchResults(); track quiz) {
             <div
               class="dropdown-item"
               (click)="selectQuiz(quiz)">
@@ -51,66 +51,66 @@
   </div>
 
   <!-- Quiz Results -->
-  @if (selectedQuiz) {
+  @if (selectedQuiz()) {
     <div class="results-container">
       <!-- Quiz Info Card -->
       <mat-card class="quiz-info-card">
         <mat-card-header>
-          <mat-card-title>{{ selectedQuiz.quizName }}</mat-card-title>
+          <mat-card-title>{{ selectedQuiz()!.quizName }}</mat-card-title>
           <mat-card-subtitle>Contract:
-            <a href="{{ getPolygonScanUrl(selectedQuiz.quizAddress) }}" target="_blank" class="address">{{ selectedQuiz.quizAddress }}</a>
+            <a href="{{ getPolygonScanUrl(selectedQuiz()!.quizAddress) }}" target="_blank" class="address">{{ selectedQuiz()!.quizAddress }}</a>
           </mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
-          @if (quizInfo) {
+          @if (quizInfo()) {
             <div class="quiz-details">
               <div class="detail-item">
-                <strong>Creator:</strong> {{ shortenAddress(quizInfo.creator) }}
+                <strong>Creator:</strong> {{ shortenAddress(quizInfo()!.creator) }}
                 <button mat-icon-button
-                  (click)="openInNewTab(getPolygonScanUrl(quizInfo.creator))"
+                  (click)="openInNewTab(getPolygonScanUrl(quizInfo()!.creator))"
                   matTooltip="View on Polygon Amoy Scan"
                   class="address-button">
                   <mat-icon>open_in_new</mat-icon>
                 </button>
               </div>
               <div class="detail-item">
-                <strong>Questions:</strong> {{ quizInfo.questionCount }}
+                <strong>Questions:</strong> {{ quizInfo()!.questionCount }}
               </div>
               <div class="detail-item">
                 <strong>Status:</strong>
-                <span [class]="quizInfo.isFinished ? 'status-finished' : (quizInfo.isStarted ? 'status-active' : 'status-pending')">
-                  {{ quizInfo.isFinished ? 'Finished' : (quizInfo.isStarted ? 'Active' : 'Pending') }}
+                <span [class]="quizInfo()!.isFinished ? 'status-finished' : (quizInfo()!.isStarted ? 'status-active' : 'status-pending')">
+                  {{ quizInfo()!.isFinished ? 'Finished' : (quizInfo()!.isStarted ? 'Active' : 'Pending') }}
                 </span>
               </div>
               <div class="detail-item">
-                <strong>Total Players:</strong> {{ quizInfo.playerAddresses.length }}
+                <strong>Total Players:</strong> {{ quizInfo()!.playerAddresses.length }}
               </div>
             </div>
           }
         </mat-card-content>
       </mat-card>
       <!-- Winner Section -->
-      @if (winner && winner.winnerAddress) {
+      @if (winner() && winner()!.winnerAddress) {
         <mat-card class="winner-card">
           <mat-card-header>
-            <mat-card-title>🏆 Winner</mat-card-title>
+            <mat-card-title>Winner</mat-card-title>
           </mat-card-header>
           <mat-card-content>
-            @if (!loadingWinner) {
+            @if (!loadingWinner()) {
               <div class="winner-info">
                 <div class="winner-address">
-                  {{ shortenAddress(winner.winnerAddress) }}
+                  {{ shortenAddress(winner()!.winnerAddress) }}
                   <button mat-icon-button
-                    (click)="openInNewTab(getPolygonScanUrl(winner.winnerAddress))"
+                    (click)="openInNewTab(getPolygonScanUrl(winner()!.winnerAddress))"
                     matTooltip="View on Polygon Amoy Scan"
                     class="address-button">
                     <mat-icon>open_in_new</mat-icon>
                   </button>
                 </div>
-                <div class="winner-score">Score: {{ winner.winnerScore }}</div>
+                <div class="winner-score">Score: {{ winner()!.winnerScore }}</div>
               </div>
             }
-            @if (loadingWinner) {
+            @if (loadingWinner()) {
               <div class="loading-section">
                 <mat-spinner diameter="30"></mat-spinner>
                 <span>Loading winner...</span>
@@ -130,19 +130,19 @@
             <button mat-raised-button
               color="accent"
               (click)="loadAllPlayers()"
-              [disabled]="loadingPlayers">
-              @if (loadingPlayers) {
+              [disabled]="loadingPlayers()">
+              @if (loadingPlayers()) {
                 <mat-spinner diameter="20"></mat-spinner>
               }
-              @if (!loadingPlayers) {
+              @if (!loadingPlayers()) {
                 <span>Get All Players</span>
               }
             </button>
           </div>
           <!-- Players List -->
-          @if (players.length > 0) {
+          @if (players().length > 0) {
             <div class="players-list">
-              @for (player of players; track player; let i = $index) {
+              @for (player of players(); track player; let i = $index) {
                 <div class="player-item">
                   <div class="player-header">
                     <div class="player-rank">#{{ i + 1 }}</div>
@@ -158,20 +158,20 @@
                     <button mat-button
                       color="primary"
                       (click)="loadPlayerResults(player)"
-                      [disabled]="loadingPlayerResults.has(player)">
-                      @if (loadingPlayerResults.has(player)) {
+                      [disabled]="loadingPlayerResults().has(player)">
+                      @if (loadingPlayerResults().has(player)) {
                         <mat-spinner diameter="16"></mat-spinner>
                       }
-                      @if (!loadingPlayerResults.has(player)) {
+                      @if (!loadingPlayerResults().has(player)) {
                         <span>Get Results</span>
                       }
                     </button>
                   </div>
                   <!-- Player Results -->
-                  @if (playerResults.has(player)) {
+                  @if (playerResults().has(player)) {
                     <div class="player-results">
                       <div class="player-score">
-                        <strong>Score: {{ playerResults.get(player)?.score }}</strong>
+                        <strong>Score: {{ playerResults().get(player)?.score }}</strong>
                       </div>
                       <!-- Answers Comparison -->
                       <div class="answers-section">
@@ -214,7 +214,7 @@
   }
 
   <!-- No Results Message -->
-  @if (!selectedQuiz && !isSearching) {
+  @if (!selectedQuiz() && !isSearching()) {
     <div class="no-results">
       <p>Enter a quiz name or contract address to search for quiz results</p>
     </div>

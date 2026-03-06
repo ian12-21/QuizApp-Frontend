@@ -1,9 +1,9 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { ethers, BrowserProvider, JsonRpcSigner, Contract, ContractTransactionResponse } from 'ethers';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { UserAnswer } from '../app/pages/live-quiz/live-quiz.component';
+import { UserAnswer, QuizByPinResponse } from '../models/quiz.models';
 
 const factoryAddress = '0x67a46e10ee8504be3d698d1835ef924c87a91d98';
 const API_URL = 'http://localhost:3000/api';
@@ -14,7 +14,7 @@ const factoryAbi = [
   "function createPaidQuiz(uint256 questionCount, bytes32 answersHash, uint256 entryFee) external returns (address)",
   "event QuizCreated(address indexed quizAddress, address indexed creator, uint256 questionCount)",
   "event FeeQuizCreated(address indexed quizAddress, address indexed creator, uint256 questionCount, uint256 entryFee)",
-] ;
+];
 
 // Quiz ABI (only the functions we need)
 export const quizAbi = [
@@ -34,8 +34,8 @@ export const quizAbi = [
     'event QuizFinished(address winner, uint256 score)',
     'event PlayerAnswersSubmitted(address indexed player, uint256 score)'
 ];
-  
-  
+
+
 interface QuizFactoryContract extends ethers.BaseContract {
   createBasicQuiz(questionCount: number, answerHash: string): Promise<ContractTransactionResponse>;
   createPaidQuiz(questionCount: number, answerHash: string, entryFee: number): Promise<ContractTransactionResponse>;
@@ -57,6 +57,10 @@ interface QuizContract extends ethers.BaseContract {
     providedIn: 'root'
 })
 export class QuizService {
+    private readonly platformId = inject(PLATFORM_ID);
+    private readonly http = inject(HttpClient);
+    private readonly isBrowser = isPlatformBrowser(this.platformId);
+
     private provider?: BrowserProvider;
     private factory?: QuizFactoryContract;
     private signer?: JsonRpcSigner;
@@ -68,15 +72,9 @@ export class QuizService {
       playerAddresses: string[]
     }> = new Map();
 
-    private readonly isBrowser: boolean;
-
-    constructor(
-        @Inject(PLATFORM_ID) platformId: Object,
-        private http: HttpClient
-    ) {
-        this.isBrowser = isPlatformBrowser(platformId);
+    constructor() {
         if (this.isBrowser) {
-            this.provider = new ethers.BrowserProvider(this.ethereum);
+            this.provider = new ethers.BrowserProvider(this.ethereum as any);
             this.initializeAsync();
         }
     }
@@ -102,8 +100,8 @@ export class QuizService {
         }
     }
 
-    get ethereum(): any {
-        return this.isBrowser ? window.ethereum : null;
+    get ethereum() {
+        return this.isBrowser ? window.ethereum : undefined;
     }
 
     generatePin(): string {
@@ -158,7 +156,6 @@ export class QuizService {
               freshSigner
           ) as unknown as QuizFactoryContract;
 
-          // Create answers string and hash
           const answersString = questions
               .map(q => q.correctAnswer.toString())
               .join('');
@@ -168,7 +165,7 @@ export class QuizService {
           const answersHash = ethers.keccak256(
               ethers.toUtf8Bytes(answersString)
           );
-          
+
           // console.log('Creating quiz with params:', {
           //     questionCount: questions.length,
           //     answersHash,
@@ -197,7 +194,7 @@ export class QuizService {
           // Generate and store PIN with additional data
           const pin = this.generatePin();
           const playerAddresses: string[] = [];
-            
+
           // Save to backend
           await firstValueFrom(this.http.post(`${API_URL}/quiz/create`, {
               pin,
@@ -221,18 +218,10 @@ export class QuizService {
       }
     }
 
-    async getQuizByPin(pin: string) {
+    async getQuizByPin(pin: string): Promise<QuizByPinResponse> {
         try {
             const response = await firstValueFrom(
-                this.http.get<{ 
-                    pin: string,
-                    creatorAddress: string,
-                    quizAddress: string, 
-                    quizName: string,
-                    answersString: string, 
-                    playerAddresses: string[], 
-                    questions: { question: string, answers: string[], correctAnswer: number }[] 
-                }>(`${API_URL}/quiz/${pin}`)
+                this.http.get<QuizByPinResponse>(`${API_URL}/quiz/${pin}`)
             );
             return response;
         } catch (error) {
@@ -262,7 +251,7 @@ export class QuizService {
                 throw new Error('Failed to get signer');
             }
             const quiz = new Contract(quizAddress, quizAbi, signer) as unknown as QuizContract;
-            
+
             // Check quiz state
             const isStarted = await quiz.getIsStarted();
             if (isStarted) {
@@ -280,7 +269,7 @@ export class QuizService {
             if (!receipt) {
                 throw new Error('Transaction receipt not found');
             }
-            
+
             const event = receipt.logs
                 .map(log => quiz.interface.parseLog(log))
                 .find(parsedLog => parsedLog && parsedLog.name === 'QuizStarted');
@@ -331,7 +320,7 @@ export class QuizService {
                 throw new Error('Failed to get signer');
             }
             const quiz = new Contract(quizAddress, quizAbi, signer) as unknown as QuizContract;
-            
+
             // Check quiz state
             const isStarted = await quiz.getIsStarted();
             const isFinished = await quiz.getIsFinished();
@@ -350,7 +339,7 @@ export class QuizService {
                 winnerData.score
             );
             const receipt = await tx.wait();
-            
+
             if (!receipt) {
                 throw new Error('Transaction receipt not found');
             }
@@ -359,8 +348,8 @@ export class QuizService {
                 .find(parsedLog => parsedLog && parsedLog.name === 'QuizFinished');
             const [winner, score] = event?.args || [];
 
-            return { 
-                winner, 
+            return {
+                winner,
                 score: score.toString(),
             };
         } catch (error) {
@@ -374,8 +363,8 @@ export class QuizService {
         try {
             const quiz = new Contract(quizAddress, quizAbi, this.signer) as unknown as QuizContract;
             const winnerData = await quiz.getQuizResults();
-            return { 
-                winnerAddress: winnerData.winnerAddress, 
+            return {
+                winnerAddress: winnerData.winnerAddress,
                 winnerScore: winnerData.winnerScore,
             };
         } catch (error) {
@@ -383,7 +372,6 @@ export class QuizService {
             throw error;
         }
     }
-  
 
     async submitAllUsersAnswersWithFrontendSigning(quizAddress: string): Promise<{
         success: boolean;
@@ -406,20 +394,20 @@ export class QuizService {
                     error?: string;
                 }>(`${API_URL}/quiz/${quizAddress}/prepare-submit-answers`)
             );
-    
+
             if (!response.success || !response.transactionData) {
                 throw new Error(response.error || 'Failed to prepare transaction data');
             }
-    
+
             // Get signer for transaction signing
             if (!this.signer) {
                 await this.initializeAsync();
             }
-    
+
             if (!this.signer) {
                 throw new Error('Failed to get signer');
             }
-    
+
             // Prepare transaction object
             const transactionRequest = {
                 to: response.transactionData.to,
@@ -427,28 +415,28 @@ export class QuizService {
                 // Optional: Add gas estimation
                 // gasLimit: ethers.parseUnits('500000', 'wei')
             };
-    
+
             console.log('Signing transaction with data:', {
                 to: response.transactionData.to,
                 players: response.transactionData.players,
                 answersArray: response.transactionData.answersArray,
                 scoresArray: response.transactionData.scoresArray
             });
-    
+
             // Sign and send the transaction
             const tx = await this.signer.sendTransaction(transactionRequest);
             // console.log('Transaction sent:', tx.hash);
-    
+
             // Wait for confirmation
             const receipt = await tx.wait();
             // console.log('Transaction confirmed:', receipt?.hash);
-    
+
             return {
                 success: true,
                 transactionHash: tx.hash,
                 winner: response.transactionData.winner
             };
-    
+
         } catch (error) {
             console.error('Error submitting answers with frontend signing:', error);
             throw error;
@@ -510,5 +498,4 @@ export class QuizService {
             throw error;
         }
     }
-
 }

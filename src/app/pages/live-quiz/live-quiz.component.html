@@ -1,39 +1,39 @@
 <div class="quiz-header">
-  <h1>{{ quizName }}</h1>
-  <span class="question-count">Question {{ currentQuestionIndex + 1 }} of {{ questions.length }}</span>
+  <h1>{{ quizName() }}</h1>
+  <span class="question-count">Question {{ currentQuestionIndex() + 1 }} of {{ questions().length }}</span>
 </div>
 
 <div class="quiz-container">
   <!-- Loading spinner overlay for non-creator users -->
-  @if (!isCreator && isFinished) {
+  @if (!isCreator() && isFinished()) {
     <div class="loading-overlay">
       <div class="loading-content">
         <mat-spinner diameter="60" color="primary"></mat-spinner>
         <p class="loading-text">
-          {{ canEndQuiz ? 'Waiting for creator to end quiz' : 'Creator is submitting all answers...' }}
+          {{ canEndQuiz() ? 'Waiting for creator to end quiz' : 'Creator is submitting all answers...' }}
         </p>
       </div>
     </div>
   }
 
-  @if (currentQuestion) {
+  @if (currentQuestion()) {
     <div class="quiz-card">
       <div class="question-timer">
         <!-- Use inline style for direct animation control -->
-        <div id="timer-bar" class="timer-bar" [style.width.%]="timerWidth"></div>
+        <div id="timer-bar" class="timer-bar" [style.width.%]="timerWidth()"></div>
       </div>
       <div class="question-content">
-        <h2>{{ currentQuestion.question }}</h2>
+        <h2>{{ currentQuestion()!.question }}</h2>
         <div class="answer-options">
-          @for (answer of currentQuestion.answers; track answer; let i = $index) {
+          @for (answer of currentQuestion()!.answers; track answer; let i = $index) {
             <div
               class="answer-option"
-              [class.selected]="selectedAnswer === i"
-              (click)="!isCreator && (selectedAnswer = i)">
+              [class.selected]="selectedAnswer() === i"
+              (click)="selectAnswer(i)">
               <mat-radio-button
                 [value]="i"
-                [checked]="selectedAnswer === i"
-                [disabled]="isCreator">
+                [checked]="selectedAnswer() === i"
+                [disabled]="isCreator()">
                 {{ answer }}
               </mat-radio-button>
             </div>
@@ -45,19 +45,19 @@
           mat-raised-button
           color="primary"
           (click)="submitAnswer()"
-          [disabled]="selectedAnswer === null || isCreator || isFinished">
+          [disabled]="selectedAnswer() === null || isCreator() || isFinished()">
           Submit Answer
         </button>
-        @if (isCreator && isFinished) {
+        @if (isCreator() && isFinished()) {
           <button
             mat-raised-button
             color="primary"
             (click)="submitAllUsersAnswers()"
-            [disabled]="!isCreator || canEndQuiz">
+            [disabled]="!isCreator() || canEndQuiz()">
             Submit All Answers
           </button>
         }
-        @if (isCreator && isFinished && canEndQuiz) {
+        @if (isCreator() && isFinished() && canEndQuiz()) {
           <button
             mat-raised-button
             color="accent"

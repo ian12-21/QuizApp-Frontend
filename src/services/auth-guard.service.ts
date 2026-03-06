@@ -1,26 +1,19 @@
-import { Injectable } from "@angular/core";
-import { CanActivate, Router } from "@angular/router";
-import { WalletService } from "./wallet.service";
-import { QuizDataService } from "./quiz-data.service";
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+import { WalletService } from './wallet.service';
+import { QuizDataService } from './quiz-data.service';
 
-@Injectable({
-  providedIn: 'root',
-})
-export class QuizCreationGuard implements CanActivate {
-  constructor(
-    private quizDataService: QuizDataService,
-    private walletService: WalletService,
-    private router: Router
-  ) {}
+export const quizCreationGuard: CanActivateFn = () => {
+  const quizDataService = inject(QuizDataService);
+  const walletService = inject(WalletService);
+  const router = inject(Router);
 
-  canActivate(): boolean {
-    const quizData = this.quizDataService.getQuizData();
+  const quizData = quizDataService.getQuizData();
 
-    if (!quizData || quizData.ownerAddress !== this.walletService.address()) {
-      this.router.navigate(['']);
-      return false;
-    }
-
-    return true;
+  if (!quizData || quizData.ownerAddress !== walletService.address()) {
+    router.navigate(['']);
+    return false;
   }
-}
+
+  return true;
+};

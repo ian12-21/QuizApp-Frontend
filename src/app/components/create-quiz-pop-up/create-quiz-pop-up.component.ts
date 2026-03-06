@@ -1,37 +1,31 @@
-import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { FormBuilder, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 
-
 @Component({
   selector: 'app-create-quiz-pop-up',
-  standalone: true,
   imports: [
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
     MatDialogModule
-],
+  ],
   templateUrl: './create-quiz-pop-up.component.html',
-  styleUrls: ['./create-quiz-pop-up.component.scss']
+  styleUrls: ['./create-quiz-pop-up.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CreateQuizPopUpComponent {
-  quizForm: FormGroup;
+  private readonly dialogRef = inject(MatDialogRef<CreateQuizPopUpComponent>);
+  private readonly fb = inject(FormBuilder);
 
-  constructor(
-    private dialogRef: MatDialogRef<CreateQuizPopUpComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    private fb: FormBuilder
-  ) {
-    this.quizForm = this.fb.group({
-      quizName: ['', [Validators.required, this.notOnlyNumbersValidator]],
-      numberOfQuestions: ['', [Validators.required, Validators.min(1), Validators.max(50), this.onlyNumbersValidator]]
-    });
-  }
+  readonly quizForm = this.fb.group({
+    quizName: ['', [Validators.required, this.notOnlyNumbersValidator]],
+    numberOfQuestions: ['', [Validators.required, Validators.min(1), Validators.max(50), this.onlyNumbersValidator]]
+  });
 
   // Custom validator to ensure input is not only numbers
   notOnlyNumbersValidator(control: AbstractControl): ValidationErrors | null {
@@ -48,19 +42,15 @@ export class CreateQuizPopUpComponent {
     
     return null;
   }
-  
+
   // Custom validator to ensure input contains only numbers
   onlyNumbersValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
     
-    if (!value) {
-      return null; // Let required validator handle empty values
-    }
+    if (!value) return null; // Let required validator handle empty values
     
     // Check if the value consists only of numbers
-    if (!/^\d+$/.test(value)) {
-      return { notNumber: true };
-    }
+    if (!/^\d+$/.test(value)) return { notNumber: true };
     
     return null;
   }
