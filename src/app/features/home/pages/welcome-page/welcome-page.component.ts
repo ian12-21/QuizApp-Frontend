@@ -4,8 +4,8 @@ import { Router, RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { WalletService } from '../../../../core/services/wallet.service';
 import { QuizDataService } from '../../../../core/services/quiz-data.service';
-import { CreateQuizDialogComponent } from '../../../quiz/components/create-quiz-dialog/create-quiz-dialog.component';
-import { JoinQuizDialogComponent } from '../../../quiz/components/join-quiz-dialog/join-quiz-dialog.component';
+import { CreateQuizDialogComponent } from '../../components/create-quiz-dialog/create-quiz-dialog.component';
+import { JoinQuizDialogComponent } from '../../components/join-quiz-dialog/join-quiz-dialog.component';
 
 @Component({
   selector: 'app-welcome-page',
