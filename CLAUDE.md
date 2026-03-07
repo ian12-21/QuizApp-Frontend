@@ -53,6 +53,7 @@ When you update a component, be sure to put the logic in the ts file, the styles
 ## Resources
 
 Here are some links to the essentials for building Angular applications. Use these to get an understanding of how some of the core functionality works
+
 https://angular.dev/essentials/components
 https://angular.dev/essentials/signals
 https://angular.dev/essentials/templates
@@ -120,3 +121,197 @@ Here is a link to the most recent Angular style guide https://angular.dev/style-
 - Design services around a single responsibility
 - Use the `providedIn: 'root'` option for singleton services
 - Use the `inject()` function instead of constructor injection
+
+---
+
+# Modern Angular Project Structure (Angular v20+)
+
+Modern Angular applications use a **standalone-first architecture** and no longer rely on `NgModule` files for organizing applications. Instead, projects are typically structured around **features**, **standalone components**, and **application configuration files**.
+
+The recommended structure emphasizes:
+
+* Feature-based organization
+* Standalone components, directives, and pipes
+* Lazy-loaded routes
+* Signals for state management
+* Minimal global configuration
+
+Below is a common structure used in modern Angular applications.
+
+```
+src/
+│
+├── main.ts
+├── index.html
+│
+└── app/
+    │
+    ├── app.component.ts
+    ├── app.component.html
+    ├── app.config.ts
+    ├── app.routes.ts
+    │
+    ├── core/
+    │   ├── services/
+    │   │   ├── api.service.ts
+    │   │   └── auth.service.ts
+    │   │
+    │   ├── guards/
+    │   │   └── auth.guard.ts
+    │   │
+    │   ├── interceptors/
+    │   │   └── auth.interceptor.ts
+    │   │
+    │   └── models/
+    │       └── user.model.ts
+    │
+    ├── shared/
+    │   ├── components/
+    │   │   └── button/
+    │   │       ├── button.component.ts
+    │   │       ├── button.component.html
+    │   │       └── button.component.css
+    │   │
+    │   ├── pipes/
+    │   │   └── currency.pipe.ts
+    │   │
+    │   └── directives/
+    │       └── tooltip.directive.ts
+    │
+    ├── features/
+    │   │
+    │   ├── auth/
+    │   │   ├── pages/
+    │   │   │   ├── login.component.ts
+    │   │   │   └── register.component.ts
+    │   │   │
+    │   │   ├── services/
+    │   │   │   └── auth.service.ts
+    │   │   │
+    │   │   └── auth.routes.ts
+    │   │
+    │   ├── dashboard/
+    │   │   ├── pages/
+    │   │   │   └── dashboard.component.ts
+    │   │   │
+    │   │   ├── components/
+    │   │   │   └── stats-card.component.ts
+    │   │   │
+    │   │   └── dashboard.routes.ts
+    │   │
+    │   └── users/
+    │       ├── pages/
+    │       │   ├── users-list.component.ts
+    │       │   └── user-detail.component.ts
+    │       │
+    │       ├── services/
+    │       │   └── users.service.ts
+    │       │
+    │       └── users.routes.ts
+    │
+    └── state/
+        ├── auth.store.ts
+        └── users.store.ts
+```
+
+## Folder Responsibilities
+
+### app/
+
+Root application configuration.
+
+Contains:
+
+* root component
+* global routes
+* global providers
+
+Typical files:
+
+* `app.component.ts`
+* `app.routes.ts`
+* `app.config.ts`
+
+---
+
+### core/
+
+Infrastructure layer containing **singleton services** used across the entire application.
+
+Examples:
+
+* API services
+* authentication services
+* route guards
+* HTTP interceptors
+* shared domain models
+
+Rules:
+
+* instantiated once
+* contains no UI components
+
+---
+
+### shared/
+
+Reusable UI utilities used across multiple features.
+
+Examples:
+
+* reusable UI components
+* pipes
+* directives
+* helper utilities
+
+Shared components should remain **stateless and reusable**.
+
+---
+
+### features/
+
+Features represent **business domains**.
+
+Each feature contains everything related to that domain.
+
+Typical feature structure:
+
+```
+feature/
+  pages/
+  components/
+  services/
+  feature.routes.ts
+```
+
+This approach keeps logic, UI, and state **co-located and easier to maintain**.
+
+---
+
+### state/
+
+Optional but common in modern Angular apps.
+
+Contains **signal-based state stores** or application-level state logic.
+
+Examples:
+
+* signal stores
+* feature state
+* computed derived state
+
+---
+
+## Architectural Principles
+
+Modern Angular applications should follow these core principles:
+
+* Prefer **standalone components**
+* Organize code by **features**
+* Use **signals for state**
+* Keep components **small and focused**
+* Lazy load large features
+* Place infrastructure in `core`
+* Place reusable UI in `shared`
+
+This structure results in **scalable, maintainable, and high-performance Angular applications**.
