@@ -33,7 +33,6 @@ export class QuizQueueComponent {
   readonly quizPin = signal('');
   readonly players = computed(() => this.socketService.players());
   readonly creatorAddress = signal('');
-  readonly quizData = signal<QuizByPinResponse | null>(null);
 
   constructor() {
     if (!this.isBrowser) return;
@@ -41,53 +40,28 @@ export class QuizQueueComponent {
     this.socketService.onQuizStart$().pipe(
       takeUntilDestroyed()
     ).subscribe(data => {
-      this.router.navigate([data.redirectUrl]);
+      const activeQuiz = this.quizDataService.getActiveQuiz();
+      if (activeQuiz?.isCreator) {
+        this.router.navigate([data.redirectUrl + '/host']);
+      } else {
+        this.router.navigate([data.redirectUrl]);
+      }
     });
 
-    this.initializeQueue();
+    this.initializeFromResolvedData();
   }
 
-  private initializeQueue() {
-    try {
-      const routePin = this.route.snapshot.params['pin'];
-      const activeQuiz = this.quizDataService.getActiveQuiz();
+  private initializeFromResolvedData() {
+    const quizData: QuizByPinResponse = this.route.snapshot.data['quizData'];
 
-      if (routePin) {
-        this.quizPin.set(routePin);
-        this.loadQuizByPin(routePin);
-      } else if (activeQuiz) {
-        this.quizPin.set(activeQuiz.pin);
-        this.loadQuizByPin(activeQuiz.pin);
-      } else {
-        this.router.navigate(['/']);
-      }
+    this.quizAddress.set(quizData.quizAddress);
+    this.quizPin.set(quizData.pin);
+    this.quizName.set(quizData.quizName);
+    this.creatorAddress.set(quizData.creatorAddress);
 
-      const userAddress = this.walletService.address();
-      if (userAddress && userAddress !== this.creatorAddress()) {
-        this.socketService.joinQuizQueue(this.quizPin(), userAddress);
-      }
-    } catch (error) {
-      console.error('Error initializing quiz queue:', error);
-      this.router.navigate(['/']);
-    }
-  }
-
-  private async loadQuizByPin(pin: string) {
-    if (!this.isBrowser) return;
-
-    try {
-      const quizInfo = await this.quizService.getQuizByPin(pin);
-      if (quizInfo) {
-        this.quizAddress.set(quizInfo.quizAddress);
-        this.creatorAddress.set(quizInfo.creatorAddress);
-        this.quizName.set(quizInfo.quizName);
-        this.quizData.set(quizInfo);
-      } else {
-        this.router.navigate(['/']);
-      }
-    } catch (error) {
-      console.error('Error loading quiz by pin:', error);
-      this.router.navigate(['/']);
+    const userAddress = this.walletService.address();
+    if (userAddress && userAddress !== quizData.creatorAddress) {
+      this.socketService.joinQuizQueue(quizData.pin, userAddress);
     }
   }
 

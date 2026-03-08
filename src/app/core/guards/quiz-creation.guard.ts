@@ -1,16 +1,17 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { WalletService } from '../services/wallet.service';
-import { QuizDataService } from '../services/quiz-data.service';
+import { waitForWallet } from './wait-for-wallet';
 
-export const quizCreationGuard: CanActivateFn = () => {
-  const quizDataService = inject(QuizDataService);
-  const walletService = inject(WalletService);
+// Guard to ensure that only the quiz creator can access the quiz creation page
+// async because we need to wait for wallet readiness before accessing its state
+export const quizCreationGuard: CanActivateFn = async (route) => {
+  const walletService = await waitForWallet();
   const router = inject(Router);
 
-  const quizData = quizDataService.getQuizData();
+  const routeAddress = route.params['user-address'];
+  const walletAddress = walletService.address();
 
-  if (!quizData || quizData.ownerAddress !== walletService.address()) {
+  if (!walletAddress || walletAddress !== routeAddress) {
     router.navigate(['']);
     return false;
   }

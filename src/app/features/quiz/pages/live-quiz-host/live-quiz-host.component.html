@@ -1,0 +1,47 @@
+<div class="quiz-header">
+  <h1>{{ quizName() }}</h1>
+  <span class="question-count">Question {{ currentQuestionIndex() + 1 }} of {{ questions().length }}</span>
+</div>
+
+<div class="quiz-container">
+  @if (currentQuestion()) {
+    <div class="quiz-card">
+      <div class="question-timer">
+        <div class="timer-bar" [style.width.%]="timerWidth()"></div>
+      </div>
+      <div class="question-content">
+        <h2>{{ currentQuestion()!.question }}</h2>
+        <div class="answer-options">
+          @for (answer of currentQuestion()!.answers; track answer; let i = $index) {
+            <div class="answer-option disabled">
+              <mat-radio-button
+                [value]="i"
+                [disabled]="true">
+                {{ answer }}
+              </mat-radio-button>
+            </div>
+          }
+        </div>
+      </div>
+      <div class="quiz-actions">
+        @if (isFinished()) {
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="submitAllUsersAnswers()"
+            [disabled]="canEndQuiz()">
+            Submit All Answers
+          </button>
+        }
+        @if (isFinished() && canEndQuiz()) {
+          <button
+            mat-raised-button
+            color="accent"
+            (click)="endQuiz()">
+            End Quiz
+          </button>
+        }
+      </div>
+    </div>
+  }
+</div>

@@ -15,6 +15,7 @@ export class WalletService {
   readonly isConnecting = signal<boolean>(false);
   readonly error = signal<string | null>(null);
 
+  readonly isReady = signal(false);
   readonly isConnected = computed(() => isNotNull(this.address()));
   readonly shortAddress = computed(() => {
     const addr = this.address();
@@ -24,7 +25,9 @@ export class WalletService {
   constructor() {
     if (this.isBrowser) {
       this.initializeWalletListeners();
-      this.checkExistingConnection();
+      this.checkExistingConnection().finally(() => this.isReady.set(true));
+    } else {
+      this.isReady.set(true);
     }
   }
 

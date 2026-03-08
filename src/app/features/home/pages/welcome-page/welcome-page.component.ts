@@ -3,7 +3,6 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { WalletService } from '../../../../core/services/wallet.service';
-import { QuizDataService } from '../../../../core/services/quiz-data.service';
 import { CreateQuizDialogComponent } from '../../components/create-quiz-dialog/create-quiz-dialog.component';
 import { JoinQuizDialogComponent } from '../../components/join-quiz-dialog/join-quiz-dialog.component';
 
@@ -18,7 +17,6 @@ export class WelcomePageComponent {
   protected readonly walletService = inject(WalletService);
   private readonly dialog = inject(MatDialog);
   private readonly router = inject(Router);
-  private readonly quizDataService = inject(QuizDataService);
 
   async connectWallet() {
     try {
@@ -36,16 +34,14 @@ export class WelcomePageComponent {
 
     const result = await firstValueFrom(dialogRef.afterClosed());
     if (result) {
-        // Store quiz data in the service
       const address = this.walletService.address();
-      if (address) {
-        this.quizDataService.setQuizData({
+      this.router.navigate(['/quiz-creation', address], {
+        state: {
           quizName: result.quizName,
           numberOfQuestions: result.numberOfQuestions,
           ownerAddress: address
-        });
-      }
-      this.router.navigate(['/quiz-creation', address]);
+        }
+      });
     }
   }
 
@@ -57,7 +53,6 @@ export class WelcomePageComponent {
 
     const result = await firstValueFrom(dialogRef.afterClosed());
     if (result) {
-        // Handle joining the quiz here
       this.router.navigate(['/quiz-queue/quiz-address/', result.quizPin], {
         state: {
           quizAddress: result.quizAddress,

@@ -10,7 +10,7 @@ import { WalletService } from '../../../../core/services/wallet.service';
 import { QuizService } from '../../../../core/services/quiz-contracts.service';
 import { QuizDataService } from '../../../../core/services/quiz-data.service';
 import { SocketService } from '../../../../core/services/socket.service';
-import { QuizQuestion } from '../../../../core/models/quiz.models';
+import { QuizData, QuizQuestion } from '../../../../core/models/quiz.models';
 
 @Component({
   selector: 'app-create-questions',
@@ -45,13 +45,16 @@ export class CreateQuestionsComponent {
   readonly questionsForm: FormArray;
 
   constructor() {
-    const quizData = this.quizDataService.getQuizData();
+    const state = history.state as QuizData | undefined;
 
-    //checking if user is owner happens in auth-guard
-    if (quizData) {
-      this.quizName.set(quizData.quizName);
-      this.numberOfQuestions.set(quizData.numberOfQuestions);
-      this.ownerAddress.set(quizData.ownerAddress);
+    if (state?.quizName) {
+      this.quizName.set(state.quizName);
+      this.numberOfQuestions.set(state.numberOfQuestions);
+      this.ownerAddress.set(state.ownerAddress);
+    } else {
+      this.questionsForm = this.fb.array([]);
+      this.router.navigate(['']);
+      return;
     }
 
     this.questionsForm = this.fb.array(
