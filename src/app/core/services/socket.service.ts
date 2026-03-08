@@ -81,7 +81,8 @@ export class SocketService {
 
       // Wait for connection
       this.socket.once('connect', () => {
-        // console.log('Socket connected successfully');
+        console.log('Socket connected successfully');
+        // Reset connection promise on successful connection
         this.connectionPromise = undefined;
         resolve();
       });
@@ -89,6 +90,7 @@ export class SocketService {
       // Handle connection error
       this.socket.once('connect_error', (error) => {
         console.error('Socket connection error:', error);
+        // Clean up on connection failure
         this.connectionPromise = undefined;
         resolve(); // Still resolve to prevent hanging
       });

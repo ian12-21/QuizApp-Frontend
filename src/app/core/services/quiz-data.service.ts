@@ -10,9 +10,12 @@ export class QuizDataService {
   private readonly isBrowser = isPlatformBrowser(this.platformId);
   private readonly activeQuizKey = 'activeQuiz';
 
+  // Internal signals to hold quiz data
   private readonly _quizData = signal<QuizData | null>(null);
   private readonly _activeQuizData = signal<ActiveQuiz | null>(null);
-
+  // Expose readonly signals for components to subscribe to
+  // Somethin similar to a BehaviorSubject in RxJS, but using Angular's signal system 
+  // --> or also getters and setters, but signals are more efficient and easier to manage in this case
   readonly quizData = this._quizData.asReadonly();
   readonly activeQuizData = this._activeQuizData.asReadonly();
 

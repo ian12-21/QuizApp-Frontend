@@ -37,6 +37,7 @@ export class CreateQuestionsComponent {
   readonly quizName = signal('');
   readonly numberOfQuestions = signal(0);
   readonly ownerAddress = signal('');
+  // Track which questions have been saved using a signal that maps question index to saved status
   readonly savedQuestions = signal<Record<number, boolean>>({});
 
   private questions: QuizQuestion[] = [];
@@ -103,22 +104,24 @@ export class CreateQuestionsComponent {
       group.get('answer2')?.value?.trim() || '',
       group.get('answer3')?.value?.trim() || '',
     ];
+    // Filter out empty answers and ensure there are at least 2
     const nonEmptyAnswers = answers.filter(a => a !== '');
     if (nonEmptyAnswers.length < 2) {
       this.snackBar.open('Please enter at least 2 answers', 'Close', { duration: 3000 });
       return;
     }
-
+    // Ensure the correct answer is still valid after filtering out empty answers
     const correctAnswer = group.get('correctAnswer')?.value;
     if (correctAnswer === null || !this.hasAnswer(index, correctAnswer)) {
       this.snackBar.open('Please select a valid correct answer', 'Close', { duration: 3000 });
       return;
     }
-
+    // Map the correct answer index to the new index in the non-empty answers array
     const nonEmptyAnswerIndices = answers
       .map((a, i) => ({ answer: a, index: i }))
       .filter(a => a.answer !== '');
 
+    // Save the question data
     this.questions[index] = {
       question: questionText,
       answers: nonEmptyAnswers,
@@ -129,6 +132,7 @@ export class CreateQuestionsComponent {
     this.snackBar.open('Question saved!', 'Close', { duration: 2000 });
   }
 
+  // Helper to check if a question is saved based on the savedQuestions signal
   isQuestionSaved(index: number): boolean {
     return this.savedQuestions()[index] || false;
   }
@@ -139,9 +143,9 @@ export class CreateQuestionsComponent {
       return;
     }
 
+    // Check if all questions are saved before allowing submission
     const unsavedQuestions = Array.from({ length: this.numberOfQuestions() }, (_, i) => i)
       .filter(i => !this.isQuestionSaved(i));
-
     if (unsavedQuestions.length > 0) {
       this.snackBar.open(`Please save questions: ${unsavedQuestions.map(i => i + 1).join(', ')}`, 'Close', { duration: 5000 });
       return;
