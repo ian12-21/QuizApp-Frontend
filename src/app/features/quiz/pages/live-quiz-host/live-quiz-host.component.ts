@@ -11,7 +11,7 @@ import { QuizService } from '../../../../core/services/quiz-contracts.service';
 import { QuizDataService } from '../../../../core/services/quiz-data.service';
 import { SocketService } from '../../../../core/services/socket.service';
 import { Question, QuizByPinResponse } from '../../../../core/models/quiz.models';
-import { startQuestionTimer, QuestionTimer } from '../quiz-timer.utils';
+import { startQuestionTimer, QuestionTimer } from '../../utils/quiz-timer.utils';
 
 @Component({
   selector: 'app-live-quiz-host',

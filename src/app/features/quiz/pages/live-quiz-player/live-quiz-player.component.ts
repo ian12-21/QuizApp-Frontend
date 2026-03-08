@@ -11,7 +11,7 @@ import { WalletService } from '../../../../core/services/wallet.service';
 import { QuizService } from '../../../../core/services/quiz-contracts.service';
 import { SocketService } from '../../../../core/services/socket.service';
 import { Question, UserAnswer, QuizByPinResponse } from '../../../../core/models/quiz.models';
-import { startQuestionTimer, QUESTION_DURATION, QuestionTimer } from '../quiz-timer.utils';
+import { startQuestionTimer, QUESTION_DURATION, QuestionTimer } from '../../utils/quiz-timer.utils';
 
 @Component({
   selector: 'app-live-quiz-player',
