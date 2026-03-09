@@ -5,10 +5,10 @@ import { QuizDataService } from '../services/quiz-data.service';
 import { waitForWallet } from './wait-for-wallet';
 
 export const quizHostGuard: CanActivateFn = async (route) => {
-  const walletService = await waitForWallet();
   const quizDataService = inject(QuizDataService);
   const quizService = inject(QuizService);
   const router = inject(Router);
+  const walletService = await waitForWallet();
 
   const pin = route.params['pin'];
   const userAddress = walletService.address();
