@@ -3,8 +3,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Router, RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { WalletService } from '../../../../core/services/wallet.service';
-import { CreateQuizDialogComponent } from '../../components/create-quiz-dialog/create-quiz-dialog.component';
-import { JoinQuizDialogComponent } from '../../components/join-quiz-dialog/join-quiz-dialog.component';
+import { CreateQuizDialogComponent } from '../../dialogs/create-quiz-dialog/create-quiz-dialog.component';
+import { JoinQuizDialogComponent } from '../../dialogs/join-quiz-dialog/join-quiz-dialog.component';
 
 @Component({
   selector: 'app-welcome-page',
