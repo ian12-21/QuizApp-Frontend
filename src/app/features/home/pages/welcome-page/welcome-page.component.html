@@ -1,34 +1,40 @@
-<section class="welcome-section container">
-  <div class="welcome-page-container">
-    <div class="container-wrapper">
-      <h1>Welcome to Quiz DApp</h1>
-      <p>Create or join quizzes and win prizes!</p>
+<section class="hero">
+  <div class="glow"></div>
 
-      @if (!walletService.isConnected()) {
-        <p>Connect wallet to continue</p>
-        <div class="button-section">
-          <div class="button-container">
-            <button class="connect-button" (click)="connectWallet()">
-              <span>{{ walletService.isConnecting() ? 'Connecting...' : 'Connect Wallet' }}</span>
-            </button>
-            <button class="about-button" routerLink="/about">About QuizApp</button>
-          </div>
-        </div>
-      }
+  <div class="content">
+    <h1 class="title">Quiz<span class="highlight">DApp</span></h1>
+    <p class="tagline">Decentralized quizzes on Solana. Create, compete, and earn.</p>
 
-      @if (walletService.isConnected()) {
-        <p>Connected: {{ walletService.shortAddress() }}</p>
-        <div class="button-section">
-          <div class="button-container">
-            <button class="create-button" (click)="openCreateQuizDialog()">Create a Quiz</button>
-            <button class="join-button" (click)="joinQuizDialog()">Join a Quiz</button>
-          </div>
-          <div class="button-container">
-            <button class="search-button" routerLink="/search-results">Search Quiz & Results</button>
-            <button class="about-button" routerLink="/about">About QuizApp</button>
-          </div>
-        </div>
-      }
-    </div>
+    @if (!walletService.isConnected()) {
+      <button mat-flat-button class="cta-button" (click)="connectWallet()">
+        {{ walletService.isConnecting() ? 'Connecting...' : 'Connect Wallet' }}
+      </button>
+      <a class="link" routerLink="/about">Learn more about QuizApp</a>
+    }
+
+    @if (walletService.isConnected()) {
+      <div class="wallet-badge">
+        <span class="dot"></span>
+        {{ walletService.shortAddress() }}
+      </div>
+
+      <div class="action-cards">
+        <button class="action-card" (click)="openCreateQuizDialog()">
+          <span class="card-icon">+</span>
+          <span class="card-label">Create Quiz</span>
+          <span class="card-desc">Design your own quiz</span>
+        </button>
+        <button class="action-card" (click)="joinQuizDialog()">
+          <span class="card-icon">&#9654;</span>
+          <span class="card-label">Join Quiz</span>
+          <span class="card-desc">Enter with a PIN code</span>
+        </button>
+      </div>
+
+      <div class="secondary-links">
+        <a routerLink="/search-results">Search Quiz & Results</a>
+        <a routerLink="/about">About</a>
+      </div>
+    }
   </div>
 </section>

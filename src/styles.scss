@@ -7,14 +7,33 @@
 html {
   @include mat.theme((
     color: (
-      theme-type: light,
-      primary: mat.$azure-palette,
-      tertiary: mat.$blue-palette,
+      theme-type: dark,
+      primary: mat.$violet-palette,
+      tertiary: mat.$cyan-palette,
     ),
     typography: "Space Grotesk",
     density: 0,
   ));
-}/* You can add global styles to this file, and also import other style files */
+
+  @include mat.dialog-overrides((
+    container-color: #262C3A,
+  ));
+
+  @include mat.form-field-overrides((
+    filled-container-color: rgba(255, 255, 255, 0.08),
+    filled-focus-active-indicator-color: #00e8b5,
+    filled-focus-label-text-color: rgba(0, 232, 181, 0.8),
+    filled-label-text-color: rgba(0, 232, 181, 0.6),
+    filled-input-text-color: white,
+    filled-input-text-placeholder-color: rgba(0, 232, 181, 0.6),
+    filled-active-indicator-color: rgba(0, 232, 181, 0.6),
+    error-text-color: #ff5252,
+    filled-error-label-text-color: #ff5252,
+    filled-error-focus-label-text-color: #ff5252,
+    filled-error-active-indicator-color: #ff5252,
+    filled-error-focus-active-indicator-color: #ff5252,
+  ));
+}
 html{
     height: 100%;
     padding: 0;

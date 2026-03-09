@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
 import { Router, RouterModule } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { WalletService } from '../../../../core/services/wallet.service';
@@ -8,7 +9,7 @@ import { JoinQuizDialogComponent } from '../../dialogs/join-quiz-dialog/join-qui
 
 @Component({
   selector: 'app-welcome-page',
-  imports: [MatDialogModule, RouterModule],
+  imports: [MatDialogModule, MatButtonModule, RouterModule],
   templateUrl: './welcome-page.component.html',
   styleUrls: ['./welcome-page.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
