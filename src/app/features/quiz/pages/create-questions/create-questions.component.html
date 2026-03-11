@@ -12,50 +12,20 @@
           <input formControlName="question"
             placeholder="Type your question here">
           <div class="answers-container">
-            <div class="answer-input">
-              <input formControlName="answer0"
-                [placeholder]="'Enter answer A'"
-                (input)="onAnswerInput(i, 0)">
-              <mat-radio-group formControlName="correctAnswer">
-                <mat-radio-button [value]="0"
-                  [disabled]="!hasAnswer(i, 0)">
-                  Correct Answer
-                </mat-radio-button>
-              </mat-radio-group>
-            </div>
-            <div class="answer-input">
-              <input formControlName="answer1"
-                [placeholder]="'Enter answer B'"
-                (input)="onAnswerInput(i, 1)">
-              <mat-radio-group formControlName="correctAnswer">
-                <mat-radio-button [value]="1"
-                  [disabled]="!hasAnswer(i, 1)">
-                  Correct Answer
-                </mat-radio-button>
-              </mat-radio-group>
-            </div>
-            <div class="answer-input">
-              <input formControlName="answer2"
-                [placeholder]="'Enter answer C'"
-                (input)="onAnswerInput(i, 2)">
-              <mat-radio-group formControlName="correctAnswer">
-                <mat-radio-button [value]="2"
-                  [disabled]="!hasAnswer(i, 2)">
-                  Correct Answer
-                </mat-radio-button>
-              </mat-radio-group>
-            </div>
-            <div class="answer-input">
-              <input formControlName="answer3"
-                [placeholder]="'Enter answer D'"
-                (input)="onAnswerInput(i, 3)">
-              <mat-radio-group formControlName="correctAnswer">
-                <mat-radio-button [value]="3"
-                  [disabled]="!hasAnswer(i, 3)">
-                  Correct Answer
-                </mat-radio-button>
-              </mat-radio-group>
-            </div>
+            <mat-radio-group formControlName="correctAnswer">
+              @for (answerIndex of [0, 1, 2, 3]; track answerIndex) {
+                <div class="answer-input">
+                  <input [formControlName]="'answer' + answerIndex"
+                    [placeholder]="'Enter answer ' + ('ABCD'[answerIndex])"
+                    (input)="onAnswerInput(i, answerIndex)">
+                  <mat-radio-button
+                    [value]="answerIndex"
+                    [disabled]="!hasAnswer(i, answerIndex)">
+                    Correct Answer
+                  </mat-radio-button>
+                </div>
+              }
+            </mat-radio-group>
           </div>
           <div class="question-actions">
             <button mat-raised-button
