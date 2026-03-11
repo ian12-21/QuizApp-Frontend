@@ -167,14 +167,14 @@ export class QuizService {
               ethers.toUtf8Bytes(answersString)
           );
 
-          // console.log('Creating quiz with params:', {
-          //     questionCount: questions.length,
-          //     answersHash,
-          //     creatorAddress
-          // });
+        //   console.log('Creating quiz with params:', {
+        //       questionCount: questions.length,
+        //       answersHash,
+        //       creatorAddress
+        //   });
 
           // Add explicit gas limit to avoid gas estimation issues
-          const tx = await this.factory.createBasicQuiz(
+          const tx = await freshFactory.createBasicQuiz(
               questions.length,
               answersHash
           );
@@ -185,7 +185,7 @@ export class QuizService {
               throw new Error('Transaction receipt not found');
           }
           const event = receipt.logs
-              .map(log => this.factory?.interface.parseLog(log))
+              .map(log => freshFactory.interface.parseLog(log))
               .find(parsedLog => parsedLog && parsedLog.name === 'QuizCreated');
           if (!event) {
               throw new Error('Quiz creation event not found');

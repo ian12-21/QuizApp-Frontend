@@ -174,8 +174,8 @@
   display: block;
   margin: 30px auto;
   font-size: 16px;
-  background-color: #262C3A;
-  color: white;
+  background-color: #262C3A !important;
+  color: white !important;
 }
 
 @media screen and (max-width: 768px) {

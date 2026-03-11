@@ -3,7 +3,7 @@
   <span class="question-count">Questions: {{ numberOfQuestions() }}</span>
 </div>
 
-<form (ngSubmit)="onSubmit()" class="quiz-form">
+<form class="quiz-form">
   <div class="questions-container">
     @for (questionGroup of questionsForm.controls; track questionGroup; let i = $index) {
       <div class="question-card" [formGroup]="getQuestionGroup(i)">
@@ -41,7 +41,7 @@
     }
   </div>
 
-  <button mat-raised-button color="primary" type="submit" class="submit-button">
+  <button mat-raised-button color="primary" type="button" (click)="onSubmit()" class="submit-button">
     Deploy Quiz
   </button>
 </form>
