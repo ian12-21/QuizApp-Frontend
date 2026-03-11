@@ -57,7 +57,7 @@
   input {
     background-color: #262C3A;
     height: 50px;
-    border: 1px solid white;
+    border: 1px solid gray;
     border-radius: 8px;
     font-size: 16px;
     margin-bottom: 25px;
@@ -81,6 +81,12 @@
     gap: 15px;
     margin-bottom: 25px;
 
+    mat-radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
     .answer-input {
       display: flex;
       align-items: center;
@@ -97,29 +103,29 @@
         ::ng-deep .mdc-form-field {
           color: white;
         }
-        
+
         ::ng-deep .mdc-radio {
           padding: 10px;
         }
-        
+
         ::ng-deep .mdc-radio .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__outer-circle,
         ::ng-deep .mdc-radio .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__inner-circle {
           border-color: rgba(0, 232, 181, 0.8);
         }
-        
+
         ::ng-deep .mdc-radio .mdc-radio__native-control:enabled:checked + .mdc-radio__background .mdc-radio__inner-circle {
           background-color: rgba(0, 232, 181, 0.8);
         }
-        
+
         ::ng-deep .mdc-radio .mdc-radio__native-control:enabled:not(:checked) + .mdc-radio__background .mdc-radio__outer-circle {
           border-color: rgba(255, 255, 255, 0.6);
         }
-        
+
         &[disabled] {
           ::ng-deep .mdc-form-field label {
             color: rgba(255, 255, 255, 0.4);
           }
-          
+
           ::ng-deep .mdc-radio .mdc-radio__native-control:disabled + .mdc-radio__background .mdc-radio__outer-circle,
           ::ng-deep .mdc-radio .mdc-radio__native-control:disabled + .mdc-radio__background .mdc-radio__inner-circle {
             border-color: rgba(255, 255, 255, 0.3);
@@ -187,7 +193,4 @@
     padding: 15px;
   }
 
-  mat-radio-button {
-    margin: 0;
-  }
 }

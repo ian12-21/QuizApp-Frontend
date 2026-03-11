@@ -32,6 +32,7 @@
       justify-content: space-between;
 
       button[color="primary"] {
+        color: white !important;
         background: linear-gradient(45deg, #d43bd4, #3071ab);
         transition: all 0.3s ease;
 
@@ -43,6 +44,18 @@
         &[disabled] {
           opacity: 0.6;
         }
+      }
+    }
+
+    button[color="cancel"] {
+      color: rgba(255, 255, 255, 0.85) !important;
+      background: rgba(38, 44, 58, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: all 0.3s ease;
+
+      &:hover {
+        box-shadow: 0 0 10px rgba(38, 44, 58, 0.5);
+        filter: brightness(1.1);
       }
     }
   }
