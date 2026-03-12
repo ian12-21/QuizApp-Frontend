@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { quizCreationGuard } from '../../core/guards/quiz-creation.guard';
 import { quizHostGuard } from '../../core/guards/quiz-host.guard';
+import { quizPlayerResolver } from '../../core/resolvers/quiz-player.resolver';
 import { quizResolver } from '../../core/resolvers/quiz.resolver';
 
 export const quizRoutes: Routes = [
@@ -27,6 +28,6 @@ export const quizRoutes: Routes = [
     path: 'active-quiz/:pin',
     loadComponent: () => import('./pages/live-quiz-player/live-quiz-player.component')
       .then(m => m.LiveQuizPlayerComponent),
-    resolve: { quizData: quizResolver }
+    resolve: { quizData: quizPlayerResolver }
   },
 ];
