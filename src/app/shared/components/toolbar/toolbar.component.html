@@ -1,0 +1,39 @@
+<nav class="toolbar" role="navigation" aria-label="Main navigation">
+  <a class="toolbar-brand" routerLink="/">
+    <span class="brand-icon">Q</span>
+    <span class="brand-text">QuizApp</span>
+  </a>
+
+  <div class="toolbar-center">
+    @if (authService.isAuthenticated()) {
+      <a class="user-identity" routerLink="/profile" aria-label="View profile">
+        <span
+          class="user-avatar"
+          [style.background]="avatarColor()"
+          aria-hidden="true"
+        >
+          {{ avatarInitial() }}
+        </span>
+        <span class="user-display-name">{{ authService.displayName() }}</span>
+      </a>
+      @if (networkName()) {
+        <span class="network-badge">{{ networkName() }}</span>
+      }
+    }
+  </div>
+
+  <div class="toolbar-actions">
+    <a class="toolbar-link" routerLink="/search-results" routerLinkActive="active" aria-label="Search quizzes">
+      Search
+    </a>
+    <a class="toolbar-link" routerLink="/about" routerLinkActive="active" aria-label="About page">
+      About
+    </a>
+
+    @if (authService.isAuthenticated()) {
+      <button class="toolbar-btn logout-btn" (click)="logout()" aria-label="Log out">
+        Logout
+      </button>
+    }
+  </div>
+</nav>

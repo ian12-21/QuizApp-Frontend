@@ -1,0 +1,76 @@
+<section class="profile-section">
+  <div class="profile-card">
+    <button class="back-button" (click)="goBack()">
+      <span>&#8592; Back</span>
+    </button>
+
+    <h1>Your Profile</h1>
+
+    <div class="avatar-section">
+      <div class="avatar-large" [style.background]="avatarColor()">
+        {{ avatarInitial() }}
+      </div>
+      <p class="current-display-name">{{ authService.displayName() }}</p>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Wallet Address</label>
+      <div class="address-row">
+        <span class="address-text">{{ walletService.address() }}</span>
+        <button class="copy-btn" (click)="copyAddress()">
+          {{ copied() ? 'Copied!' : 'Copy' }}
+        </button>
+      </div>
+    </div>
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSave()">
+      <div class="field-group">
+        <label class="field-label" for="nickname">Nickname</label>
+        <input
+          id="nickname"
+          type="text"
+          class="field-input"
+          formControlName="nickname"
+          placeholder="Choose a nickname (3-20 chars)"
+          maxlength="20"
+          autocomplete="off"
+        />
+        @if (profileForm.get('nickname')?.errors?.['minlength']) {
+          <span class="field-error">Must be at least 3 characters</span>
+        }
+        @if (profileForm.get('nickname')?.errors?.['pattern']) {
+          <span class="field-error">Only letters, numbers, underscores, hyphens</span>
+        }
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Display As</label>
+        <div class="radio-group">
+          <label class="radio-option">
+            <input type="radio" formControlName="displayPreference" value="address" />
+            <span class="radio-label">Wallet Address</span>
+          </label>
+          <label class="radio-option">
+            <input type="radio" formControlName="displayPreference" value="nickname" />
+            <span class="radio-label">Nickname</span>
+          </label>
+        </div>
+      </div>
+
+      <button
+        type="submit"
+        class="save-button"
+        [disabled]="profileForm.invalid || isSaving()"
+      >
+        {{ isSaving() ? 'Saving...' : 'Save Changes' }}
+      </button>
+
+      @if (saveMessage()) {
+        <p class="save-success">{{ saveMessage() }}</p>
+      }
+      @if (saveError()) {
+        <p class="save-error">{{ saveError() }}</p>
+      }
+    </form>
+  </div>
+</section>

@@ -110,7 +110,7 @@ export class WalletService {
       // Switch to Polygon network first
       await this.switchToPolygonNetwork();
 
-      // Request account access
+      // Request account access — this WILL prompt MetaMask unlock if locked
       const accounts = await this.ethereum!.request({ 
         method: 'eth_requestAccounts'
       });
@@ -155,13 +155,20 @@ export class WalletService {
   async checkExistingConnection(): Promise<void> {
     if (this.isWalletInstalled()) {
       try {
-        // Get currently connected accounts
+        // Get previously authorized accounts (doesn't prompt user)
         const accounts = await this.ethereum!.request({ 
-          method: 'eth_accounts'  // Note: This doesn't prompt user, unlike eth_requestAccounts
+          method: 'eth_accounts'
         });
 
         if (accounts.length > 0) {
-          // Get current chain ID
+          // Verify wallet is actually unlocked by making a real RPC call.
+          // If MetaMask is locked, this will throw an error.
+          await this.ethereum!.request({
+            method: 'eth_getBalance',
+            params: [accounts[0], 'latest']
+          });
+
+          // If we get here, wallet is genuinely unlocked — safe to auto-connect
           const chainId = await this.ethereum!.request({ 
             method: 'eth_chainId'
           });
@@ -170,7 +177,8 @@ export class WalletService {
           this.chainId.set(parseInt(chainId, 16));
         }
       } catch (error) {
-        console.error('Error checking wallet connection:', error);
+        // Wallet is locked or not accessible — user must connect manually
+        console.warn('Wallet exists but is not accessible. Please connect manually.');
       }
     }
   }
